@@ -23,13 +23,17 @@ class LegWorkspaceNode(Node):
         self.frame_id = 'base_link'
         
         # Leg base frames
-        self.legs = {'front_right': 'fr_shoulder_base',
-                     'front_left': 'fl_shoulder_base',
-                     'back_right': 'br_shoulder_base',
-                     'back_left': 'bl_shoulder_base',
-                     #'front_left': 'fl_hip_link'
-        }
-
+        self.show_4_legs = False
+        if self.show_4_legs:
+            self.legs = {'front_right': 'fr_shoulder_base',
+                         'front_left': 'fl_shoulder_base',
+                         'back_right': 'br_shoulder_base',
+                         'back_left': 'bl_shoulder_base',
+                         #'front_left': 'fl_hip_link'
+            }
+        else:
+            self.legs = {'base': 'shoulder_base'}
+        
     
     def publish_workspace(self):
         marker_id = 0
@@ -50,10 +54,18 @@ class LegWorkspaceNode(Node):
             marker.scale.y = 0.005
 
             # Change colors for each leg's point cloud
-            marker.color.r = 1.0 if marker.id==0 else 0.2
-            marker.color.g = 1.0 if marker.id==1 else 0.2
-            marker.color.b = 1.0 if marker.id==2 else 0.2
-            marker.color.a = 0.3
+            if self.show_4_legs:
+                marker.color.r = 1.0 if marker.id==0 else 0.2
+                marker.color.g = 1.0 if marker.id==1 else 0.2
+                marker.color.b = 1.0 if marker.id==2 else 0.2
+                marker.color.a = 0.3
+            if not self.show_4_legs:
+                print(f'{self.show_4_legs}')
+                marker.color.r = 0.4
+                marker.color.g = 1.0
+                marker.color.b = 0.0
+                marker.color.a = 0.8
+                
 
             marker.pose.position.x = 0.0
             marker.pose.position.y = 0.0
@@ -69,10 +81,11 @@ class LegWorkspaceNode(Node):
                     for q3 in self.frange(-math.pi/2, math.pi/2, 0.2):
                         x, y, z = self.fk(q1, q2, q3)
                         p = Point(x=x, y=y, z=z)
-                        #print(f'{x = } {y = } {z = } {q1 = } {q2 = } {q3 = }')
-                        marker.points.append(p)
+                        if z <= -0.06:
+                            #print(f'{x = } {y = } {z = } {q1 = } {q2 = } {q3 = }')
+                            marker.points.append(p)
 
-            marker = self.points_to_mesh(marker.points, marker.header.frame_id, marker.id)
+            #marker = self.points_to_mesh(marker.points, marker.header.frame_id, marker.id)
             self.publisher.publish(marker)
             self.get_logger().info(f'Publishing {len(marker.points)} points for {leg_name}')
 
@@ -129,7 +142,7 @@ class LegWorkspaceNode(Node):
         marker.color.r = 1.0 if marker.id==0 else 0.2
         marker.color.g = 1.0 if marker.id==1 else 0.2
         marker.color.b = 1.0 if marker.id==2 else 0.2
-        marker.color.a = 0.3
+        marker.color.a = 0.6
 
         marker.points = []
 
