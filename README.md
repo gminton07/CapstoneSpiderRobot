@@ -13,7 +13,7 @@ mkdir -p ~/ros2_ws/src && cd ~/ros2_ws/src
 git clone git@github.com:gminton07/CapstoneSpiderRobot.git
 
 # Build workspace with symlinks
-cd ~/ros2_ws/src && colcon build --symlink-install
+cd ~/ros2_ws && colcon build --symlink-install
 
 # Source the workspace
 source ~/ros2_ws/install/setup.bash
