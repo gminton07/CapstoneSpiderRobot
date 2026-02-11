@@ -4,11 +4,22 @@ Capstone project: developing quadruped spider robot
 I am updating the documentation as we go!
 
 ## Initial Setup
-1.  If ROS2 workspace not already created: $ mkdir -p ~/ros2_ws/src && cd ~/ros2_ws/src
-2.  Clone repo (I suggest using SSH keys)
-3.  $ cd ~/ros2_ws && colcon build --symlink-install   # Always install symlinks, it will be easier in the long run
-4.  $ source ~/ros2_ws/install.setup.bash
-5.  $ ros2 launch spider_capstone view_spider.launch.py
+
+```bash
+# Create workspace if not already done
+mkdir -p ~/ros2_ws/src && cd ~/ros2_ws/src
+
+# Clone the repo with SSH keys
+
+# Build workspace with symlinks
+cd ~/ros2_ws/src && colcon build --symlink-install
+
+# Source the workspace
+source ~/ros2_ws/install/setup.bash
+
+# Launch general viewing nodes
+ros2 launch spider_capstone_description view_spider.launch.py
+```
 
 ## Packages
 * spider_capstone
