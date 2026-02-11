@@ -1,8 +1,7 @@
 # CapstoneSpiderRobot
 Capstone project: developing quadruped spider robot
 
-Look around at what I have made so far.
-I will update this to have better information later.
+I am updating the documentation as we go!
 
 ## Initial Setup
 1.  If ROS2 workspace not already created: $ mkdir -p ~/ros2_ws/src && cd ~/ros2_ws/src
@@ -13,10 +12,16 @@ I will update this to have better information later.
 
 ## Packages
 * spider_capstone
-  - URDF robot descriptions
-  - Launch file for RViz robot visualization
+  - Metapackage for spider_capstone packages
+  - Make sure that all project packages are installed
 
-* spider_viz
+* spider_capstone_description
+  - URDF robot descriptions
+  - RViz configurations
+  - Launch file for RViz robot visualization
+  - Future: will include ros2_control tags for URDF descriptions
+
+* spider_capstone_visualize
   - Workspace envelope visualization for RViz
   - Use with spider_capstone:view_spider.launch.py
 
