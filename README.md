@@ -10,6 +10,7 @@ I am updating the documentation as we go!
 mkdir -p ~/ros2_ws/src && cd ~/ros2_ws/src
 
 # Clone the repo with SSH keys
+git clone git@github.com:gminton07/CapstoneSpiderRobot.git
 
 # Build workspace with symlinks
 cd ~/ros2_ws/src && colcon build --symlink-install
