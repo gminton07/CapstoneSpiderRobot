@@ -3,10 +3,6 @@ Capstone project: developing quadruped spider robot
 
 I am updating the documentation as we go!
 
-``` diff
-- ADD INFO FOR ROSDEP
-```
-
 ## Initial Setup
 
 ```bash
@@ -16,6 +12,12 @@ mkdir -p ~/ros2_ws/src && cd ~/ros2_ws/src
 # Clone the repo with SSH keys
 git clone git@github.com:gminton07/CapstoneSpiderRobot.git
 
+# Install dependencies with ROSDEP
+# --from-paths src:   Dir to find packages
+# -y:                 Yes to all prompts
+# --ignore-src:       Ignore installing present packages
+rosdep install --from-paths src -y --ignore-src 
+
 # Build workspace with symlinks
 cd ~/ros2_ws && colcon build --symlink-install
 
@@ -24,6 +26,14 @@ source ~/ros2_ws/install/setup.bash
 
 # Launch general viewing nodes
 ros2 launch spider_capstone_description view_spider.launch.py
+```
+
+### If the following does not work:
+Make sure colcon, and rosdep are installed.  
+```bash
+apt-get python3-rosdep
+sudo rosdep init
+rosdep update
 ```
 
 ## Packages
