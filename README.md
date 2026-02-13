@@ -3,7 +3,9 @@ Capstone project: developing quadruped spider robot
 
 I am updating the documentation as we go!
 
-<span style="color:red">*!!!ADD INFO FOR ROSDEP!!!*</span>.
+``` diff
+- ADD INFO FOR ROSDEP
+```
 
 ## Initial Setup
 
