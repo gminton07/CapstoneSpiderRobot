@@ -16,10 +16,11 @@ git clone git@github.com:gminton07/CapstoneSpiderRobot.git
 # --from-paths src:   Dir to find packages
 # -y:                 Yes to all prompts
 # --ignore-src:       Ignore installing present packages
+cd ~/ros2_ws
 rosdep install --from-paths src -y --ignore-src 
 
 # Build workspace with symlinks
-cd ~/ros2_ws && colcon build --symlink-install
+colcon build --symlink-install
 
 # Source the workspace
 source ~/ros2_ws/install/setup.bash
