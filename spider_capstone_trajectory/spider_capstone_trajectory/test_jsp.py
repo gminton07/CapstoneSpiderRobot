@@ -14,7 +14,7 @@ class StatePublisher(Node):
 
     def __init__(self):
         rclpy.init()
-        super().__init__('state_publisher')
+        super().__init__('test_jsp')
 
         # Set QoS and publishers
         qos_profile = QoSProfile(depth=10)
