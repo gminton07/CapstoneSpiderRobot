@@ -62,3 +62,6 @@ rosdep update
 ### Create new packages for each separate feature
 This way, everything will be organized better. 
 Push updates into a new branch (feature/[feature]) so nothing breaks.
+```bash
+git checkout -b [new_branch_name]
+```
