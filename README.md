@@ -50,7 +50,14 @@ rosdep update
 
 * spider_capstone_visualize
   - Workspace envelope visualization for RViz
-  - Use with spider_capstone:view_spider.launch.py
+  - Use with spider_capstone_description:view_spider.launch.py
+
+* spider_capstone_trajectory
+  - Calculate and publish trajectory messages to the robot/ simulation
+  - test_jsp
+    - Calculates joint-space positions for the end effector (radians)
+    - Currently uses joints from 02-stl-move.urdf for single-leg movement (can be changed for use with 4-legs)
+    - Currently launches with view_spider.launch.py (model:=___, gui:=false)
 
 ### Create new packages for each separate feature
 This way, everything will be organized better. 
