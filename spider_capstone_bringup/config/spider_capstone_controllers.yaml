@@ -1,0 +1,22 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 50
+
+    # Actual controllers
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    joint_trajectory_controller_1:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+joint_trajectory_controller_1:
+  ros__parameters:
+    # Must be same as URDF
+    joints: ['fr_shoulder', 'fr_elbow', 'fr_wrist']
+
+    # Must be same as ros2_control.xacro
+    command_interfaces: 
+      - position
+    state_interfaces:
+      - position
+      - velocity
