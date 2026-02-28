@@ -25,7 +25,7 @@ def read_from_board():
 
 def write_to_board():
     while True:
-        msg = input('PC -> ')
+        msg = input('PC -> RP2040:')
         ser.write((msg + '\n').encode())
 
 
