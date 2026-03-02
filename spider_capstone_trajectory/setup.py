@@ -24,7 +24,8 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            f'test_jsp = {package_name}.test_jsp:main'
+            f'test_jsp = {package_name}.test_jsp:main',
+            f'joint_trajectory = {package_name}.joint_trajectory:main',
         ],
     },
 )

@@ -1,6 +1,9 @@
 <?xml version="1.0"?>
 <robot name="03-stl-move-macro" xmlns:xacro="http://ros.org/wiki.xacro">
 
+    <!--  Include Xacro files  -->
+    <xacro:include filename="$(find spider_capstone_description)/ros2_control/04-final.ros2_control.xacro"/>
+
   <!--  Colors  -->
   <material name="blue">
     <color rgba="0 0 0.8 1"/>
