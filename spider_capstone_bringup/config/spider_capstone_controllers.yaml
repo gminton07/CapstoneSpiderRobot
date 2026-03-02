@@ -9,10 +9,55 @@ controller_manager:
     joint_trajectory_controller_1:
       type: joint_trajectory_controller/JointTrajectoryController
 
+    joint_trajectory_controller_2:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    joint_trajectory_controller_3:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    joint_trajectory_controller_4:
+      type: joint_trajectory_controller/JointTrajectoryController
+
 joint_trajectory_controller_1:
   ros__parameters:
     # Must be same as URDF
     joints: ['fr_shoulder', 'fr_elbow', 'fr_wrist']
+
+    # Must be same as ros2_control.xacro
+    command_interfaces: 
+      - position
+    state_interfaces:
+      - position
+      - velocity
+
+joint_trajectory_controller_2:
+  ros__parameters:
+    # Must be same as URDF
+    joints: ['fl_shoulder', 'fl_elbow', 'fl_wrist']
+
+    # Must be same as ros2_control.xacro
+    command_interfaces: 
+      - position
+    state_interfaces:
+      - position
+      - velocity
+
+joint_trajectory_controller_3:
+  ros__parameters:
+    # Must be same as URDF
+    joints: ['bl_shoulder', 'bl_elbow', 'bl_wrist']
+
+    # Must be same as ros2_control.xacro
+    command_interfaces: 
+      - position
+    state_interfaces:
+      - position
+      - velocity
+
+joint_trajectory_controller_4:
+  ros__parameters:
+    # Must be same as URDF
+    joints: ['br_shoulder', 'br_elbow', 'br_wrist']
 
     # Must be same as ros2_control.xacro
     command_interfaces: 

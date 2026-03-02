@@ -22,6 +22,16 @@
 	<node 	pkg="controller_manager" exec="spawner"
 		args="joint_trajectory_controller_1"/>
 
+	<node 	pkg="controller_manager" exec="spawner"
+		args="joint_trajectory_controller_2"/>
+
+	<node 	pkg="controller_manager" exec="spawner"
+		args="joint_trajectory_controller_3"/>
+
+	<node 	pkg="controller_manager" exec="spawner"
+		args="joint_trajectory_controller_4"/>
+
+	<!--  Start RViz  -->
 	<node 	pkg="rviz2" exec="rviz2" output="screen"
 		args="-d $(var rviz_config_path)"/>
 
