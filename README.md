@@ -42,15 +42,14 @@ rosdep update
   - Metapackage for spider_capstone packages
   - Make sure that all project packages are installed
 
+* spider_capstone_bringup
+  - ADD NOTES
+
 * spider_capstone_description
   - URDF robot descriptions
   - RViz configurations
   - Launch file for RViz robot visualization
   - Future: will include ros2_control tags for URDF descriptions
-
-* spider_capstone_visualize
-  - Workspace envelope visualization for RViz
-  - Use with spider_capstone_description:view_spider.launch.py
 
 * spider_capstone_trajectory
   - Calculate and publish trajectory messages to the robot/ simulation
@@ -58,6 +57,10 @@ rosdep update
     - Calculates joint-space positions for the end effector (radians)
     - Currently uses joints from 02-stl-move.urdf for single-leg movement (can be changed for use with 4-legs)
     - Currently launches with view_spider.launch.py (model:=___, gui:=false)
+
+* spider_capstone_visualize
+  - Workspace envelope visualization for RViz
+  - Use with spider_capstone_description:view_spider.launch.py
 
 ### Create new packages for each separate feature
 This way, everything will be organized better. 
