@@ -19,6 +19,7 @@
 	<node 	pkg="controller_manager" exec="spawner"
 		args="joint_state_broadcaster"/>
 . 
+		<!--  Joint Trajectory controller for each leg  -->
 	<node 	pkg="controller_manager" exec="spawner"
 		args="joint_trajectory_controller_1"/>
 

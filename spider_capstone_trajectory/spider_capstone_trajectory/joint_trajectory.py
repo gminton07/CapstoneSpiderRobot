@@ -31,7 +31,7 @@ class JointTrajectoryPublisher(Node):
 
     def urdf_callback(self, msg):
         try:
-            tree = kdl_wrapper.tree_from_xml(msg.data)
+            tree = kdl.tree_from_xml(msg.data)
             self.get_logger().info(f'Tree created with {tree.getNrOfSegments()}')
 
             base_link = 'base_link'
@@ -42,6 +42,9 @@ class JointTrajectoryPublisher(Node):
             num_joints = chain.getNrOfJoints()
             self.get_logger().info(f"Chain extracted from {base_link} to {tip_link}")
             self.get_logger().info(f"Number of joints in chain: {num_joints}")
+
+            # Export chain to class variable
+            self.chain1 = chain
 
             # You can now use this 'chain' object for dynamics!
             

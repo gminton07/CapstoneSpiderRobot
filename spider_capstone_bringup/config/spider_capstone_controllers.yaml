@@ -9,6 +9,7 @@ controller_manager:
     joint_trajectory_controller_1:
       type: joint_trajectory_controller/JointTrajectoryController
 
+
     joint_trajectory_controller_2:
       type: joint_trajectory_controller/JointTrajectoryController
 
@@ -17,6 +18,7 @@ controller_manager:
 
     joint_trajectory_controller_4:
       type: joint_trajectory_controller/JointTrajectoryController
+
 
 joint_trajectory_controller_1:
   ros__parameters:
