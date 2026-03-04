@@ -95,6 +95,7 @@ rosdep update
     Check if this worked with ```groups $USER```.
     Afterwards, it <span style="color:red;">SHOULD NOT </span> require ```sudo``` to run the python script.
     This may require a logout/ restart to fully activate.
+    $\color{#f00}{\textsf{SHOULD NOT}}$
     - __MicroPython dir__: Holds a copy of the MP files loaded onto the servo2040 board. Current as of March 03.
 
 ### Create new packages for each separate feature
