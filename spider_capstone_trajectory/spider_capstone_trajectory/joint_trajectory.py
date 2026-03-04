@@ -26,19 +26,25 @@ class JointTrajectoryPublisher(Node):
     def __init__(self):
         super().__init__('joint_trajectory_publisher')
 
+        # Create Subscriptions
         qos_profile = QoSProfile(
             depth=1,
             durability=DurabilityPolicy.TRANSIENT_LOCAL,
             reliability=ReliabilityPolicy.RELIABLE
         )
-
         self.subscription_ = self.create_subscription(
             String,
             '/robot_description',
             self.urdf_callback,
             qos_profile
         )
-        self.publisher_ = self.create_publisher(JointTrajectory, '/joint_trajectory_controller_1/joint_trajectory', 10)
+
+        # Create Publishers
+        self.publisher1_ = self.create_publisher(
+            JointTrajectory, 
+            '/joint_trajectory_controller_1/joint_trajectory', 
+            10)
+        
         self.timer_ = self.create_timer(30.0, self.publish_trajectory)
         self.get_logger().info('Joint trajectory publisher started!')
 
@@ -108,7 +114,7 @@ class JointTrajectoryPublisher(Node):
 
         
         ## Publish JointTrajectory message
-        self.publisher_.publish(msg)
+        self.publisher1_.publish(msg)
         self.get_logger().info(f'Published joint trajectory. Points: {len(msg.points)}')
 
 def get_joint_names(chain):
@@ -128,6 +134,7 @@ def get_joint_names(chain):
 
 # NOTE: This section gets current robot state from /joint_states topic
 #       and saves into JntArray object
+#       Available if we want to integrate feedback loops
 # 
 # TODO: If using this section:
 #       Add subscriber to /joint_states, using
