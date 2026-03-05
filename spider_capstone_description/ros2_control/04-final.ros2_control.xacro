@@ -7,21 +7,29 @@
       <param name="calculate_dynamics">true</param>
     </hardware>
 
-    <!-- First leg only -->
-    <joint name="fr_shoulder">
-      <command_interface name="position"/>
-      <state_interface name="position"/>
-      <state_interface name="velocity"/>
-    </joint>
-    <joint name="fr_elbow">
-      <command_interface name="position"/>
-      <state_interface name="position"/>
-      <state_interface name="velocity"/>
-    </joint>
-    <joint name="fr_wrist">
-      <command_interface name="position"/>
-      <state_interface name="position"/>
-      <state_interface name="velocity"/>
-    </joint>
+    <xacro:macro name="ros2_control" params="prefix">
+      <!-- First leg only -->
+      <joint name="${prefix}_shoulder">
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="${prefix}_elbow">
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="${prefix}_wrist">
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+    </xacro:macro>
+
+    <xacro:ros2_control prefix="fr"/>
+    <xacro:ros2_control prefix="fl"/>
+    <xacro:ros2_control prefix="br"/>
+    <xacro:ros2_control prefix="bl"/>
+    
   </ros2_control>
 </robot>
