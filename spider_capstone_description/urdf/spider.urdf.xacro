@@ -1,27 +1,154 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="spider">
-  
-  <link name="base_link">
-    <visual>
-      <geometry>
-        <box size="1 1 1"/>
-      </geometry>
-    </visual>
-  </link>
+<!--  Include Xacro files  -->
+	<xacro:include filename="$(find spider_capstone_description)/ros2_control/spider.ros2_control.xacro"/>
 
-  <joint name="test_joint" type="revolute">
-    <parent link="base_link"/>
-    <child link="leg_link"/>
-    <origin xyz="0 0 0.1" rpy="0 0 0"/>
-    <axis xyz="0 0 1"/>
-    <limit lower="-${pi/2}" upper="${pi/2}" effort="1.0" velocity="1.0"/>
-  </joint>
+	<!--  Colors  -->
+	<material name="blue">
+		<color rgba="0 0 0.8 1"/>
+	</material>
+	<material name="green">
+		<color rgba="0 0.8 0 1"/>
+	</material>
+	<material name="red">
+		<color rgba="0.8 0 0 1"/>
+	</material>
+	<material name="white">
+		<color rgba="0.8 0.8 0.8 1"/>
+	</material>	
 
-  <link name="leg_link">
-    <visual>
-      <geometry>
-        <cylinder radius="1.0" length="1.0"/>
-      </geometry>
-    </visual>
-  </link>
+	<!--  Macro Properties  -->
+	<xacro:property name="mesh_dir" value="package://spider_capstone_description/meshes/V1"/>
+	<xacro:property name="mesh_scale" value="0.001"/>
+	<xacro:property name="scale3" value="${mesh_scale} ${mesh_scale} ${mesh_scale}"/>
+
+	<!--  Define base  -->
+	<link name="base_link"/>
+
+	<joint name="base_link_to_BaseLowerPlate" type="fixed">
+		<parent joint="base_link"/>
+		<child joint="BaseLowerPlate"/>
+		<origin xyz="0 0 0" rpy="0 0 0"/>
+	</joint>
+
+	<link name="BaseLowerPlate">
+		<visual>
+			<geometry>
+				<mesh filename="${mesh_dir}/BaseLowerPlate.stl" scale="${scale3}"/>
+			</geometry>
+			<material name="blue"/>
+			<origin xyz="0 0 0" rpy="0 0 0"/>
+		</visual>
+	</link>
+
+	<joint name="BaseLowerPlate_to_BaseUpperPlate" type="fixed">
+		<parent joint="BaseLowerPlate"/>
+		<child joint="BaseUpperPlate"/>
+		<origin xyz="0 0 10" rpy="0 0 0"/>
+	</joint>
+
+	<link name="BaseUpperPlate">
+		<visual>
+			<geometry>
+				<mesh filename="${mesh_dir}/BaseUpperPlate.stl" scale="${scale3}"/>
+			</geometry>
+			<material name="red"/>
+			<origin xyz="0 0 0" rpy="0 0 0"/>
+		</visual>
+	</link>
+
+	<!--  Define leg  -->
+	<link name="Link1Upper">
+		<visual>
+			<geometry>
+				<mesh filename="${mesh_dir}/BaseUpperPlate.stl" scale="${scale3}"/>
+			</geometry>
+			<material name="red"/>
+			<origin xyz="0 0 10" rpy="0 0 0"/>
+		</visual>
+	</link>
+
+	<link name="Link2Lower">
+		<visual>
+			<geometry>
+				<mesh filename="${mesh_dir}/BaseUpperPlate.stl" scale="${scale3}"/>
+			</geometry>
+			<material name="red"/>
+			<origin xyz="0 0 10" rpy="0 0 0"/>
+		</visual>
+	</link>
+
+	<link name="Link2Left">
+		<visual>
+			<geometry>
+				<mesh filename="${mesh_dir}/BaseUpperPlate.stl" scale="${scale3}"/>
+			</geometry>
+			<material name="red"/>
+			<origin xyz="0 0 10" rpy="0 0 0"/>
+		</visual>
+	</link>
+
+	<link name="Link2Right">
+		<visual>
+			<geometry>
+				<mesh filename="${mesh_dir}/BaseUpperPlate.stl" scale="${scale3}"/>
+			</geometry>
+			<material name="red"/>
+			<origin xyz="0 0 10" rpy="0 0 0"/>
+		</visual>
+	</link>
+
+
+	<link name="Link3Left">
+		<visual>
+			<geometry>
+				<mesh filename="${mesh_dir}/BaseUpperPlate.stl" scale="${scale3}"/>
+			</geometry>
+			<material name="red"/>
+			<origin xyz="0 0 10" rpy="0 0 0"/>
+		</visual>
+	</link>
+
+	<link name="Link3Right">
+		<visual>
+			<geometry>
+				<mesh filename="${mesh_dir}/BaseUpperPlate.stl" scale="${scale3}"/>
+			</geometry>
+			<material name="red"/>
+			<origin xyz="0 0 10" rpy="0 0 0"/>
+		</visual>
+	</link>
+
+	<link name="EndEffector">
+		<visual>
+			<geometry>
+				<mesh filename="${mesh_dir}/BaseUpperPlate.stl" scale="${scale3}"/>
+			</geometry>
+			<material name="red"/>
+			<origin xyz="0 0 10" rpy="0 0 0"/>
+		</visual>
+	</link>
+
+	<!--  Servo Seats  -->
+	<link name="MG90SSeat">
+		<visual>
+			<geometry>
+				<mesh filename="${mesh_dir}/BaseUpperPlate.stl" scale="${scale3}"/>
+			</geometry>
+			<material name="red"/>
+			<origin xyz="0 0 10" rpy="0 0 0"/>
+		</visual>
+	</link>
+
+	<link name="MG996RSeat">
+		<visual>
+			<geometry>
+				<mesh filename="${mesh_dir}/BaseUpperPlate.stl" scale="${scale3}"/>
+			</geometry>
+			<material name="red"/>
+			<origin xyz="0 0 10" rpy="0 0 0"/>
+		</visual>
+	</link>
+
+
 </robot>
