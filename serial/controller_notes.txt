@@ -1,0 +1,44 @@
+Figure out serial communication in C++
+
+1.  Prepare package
+2.  Create source files
+3.  Create header (.hpp)
+4.  Source (.cpp)
+
+    ??Add publisher, service??
+
+    Implement lifecycle methods
+    on_init: 
+        Create member variables, process info arguments
+    on_configure:
+        Start serial communication
+        Get confirmation from servo2040
+    on_cleanup:
+        Close serial communication
+    on_export_(command|state)_interfaces:
+        DO I HAVE TO IMPLEMENT THIS???
+    on_activate:
+        Enable hardware "power"
+        Send command to enable servos
+    on_deactivate:
+        Disable servos
+    on_shutdown:
+        Gracefully shutdown servo2040
+    on_error:
+        Handle errors from other states
+    read:
+        Get states from hardware and store into the internal variables from export_state_interfaces
+    write:
+        Command hardware from values in export_command_interfaces variables
+
+    PLUGINLIB_EXPORT_CLASS
+
+5.  Create <my_hardware_interface_package>.xml
+    with HW interface PLUGINLIB_EXPORT_CLASS
+6.  Test with load_generic_system_2dof
+7.  Add compile directives to CMakeLists.txt
+8.  Dependencies into package.xml
+9.  Compile and test hardware component
+
+Is is good to use multiple controllers with the same hardware interface, 
+or do only the command interfaces matter?
