@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="spider">
-<!--  Include Xacro files  -->
+        <!--  Include Xacro files  -->
 	<xacro:include filename="$(find spider_capstone_description)/ros2_control/spider.ros2_control.xacro"/>
 
 	<!--  Colors  -->
@@ -26,8 +26,8 @@
 	<link name="base_link"/>
 
 	<joint name="base_link_to_BaseLowerPlate" type="fixed">
-		<parent joint="base_link"/>
-		<child joint="BaseLowerPlate"/>
+		<parent link="base_link"/>
+		<child link="BaseLowerPlate"/>
 		<origin xyz="0 0 0" rpy="0 0 0"/>
 	</joint>
 
@@ -42,9 +42,9 @@
 	</link>
 
 	<joint name="BaseLowerPlate_to_BaseUpperPlate" type="fixed">
-		<parent joint="BaseLowerPlate"/>
-		<child joint="BaseUpperPlate"/>
-		<origin xyz="0 0 10" rpy="0 0 0"/>
+		<parent link="BaseLowerPlate"/>
+		<child link="BaseUpperPlate"/>
+		<origin xyz="0 0 0.1" rpy="0 0 0"/>
 	</joint>
 
 	<link name="BaseUpperPlate">
@@ -52,103 +52,130 @@
 			<geometry>
 				<mesh filename="${mesh_dir}/BaseUpperPlate.stl" scale="${scale3}"/>
 			</geometry>
+			<material name="blue"/>
+			<origin xyz="0 0 0" rpy="0 0 0"/>
+		</visual>
+	</link>
+        
+        <!--  Define leg  -->
+        <joint name="BaseLowerPlate_to_Link1Upper" type="revolute">
+          <parent link="BaseLowerPlate"/>
+          <child link="Link1Upper"/>
+          <origin xyz="0.3 0 0" rpy="0 0 0"/>
+          <limit upper="${pi/2}" lower="${-pi/2}" effort="1000" velocity="0.5"/>
+          <axis xyz="0 0 1"/>
+        </joint>
+
+	<link name="Link1Upper">
+		<visual>
+			<geometry>
+				<mesh filename="${mesh_dir}/Link1Upper.stl" scale="${scale3}"/>
+			</geometry>
 			<material name="red"/>
 			<origin xyz="0 0 0" rpy="0 0 0"/>
 		</visual>
 	</link>
 
-	<!--  Define leg  -->
-	<link name="Link1Upper">
+        <joint name="Link1Upper_to_Link1Lower" type="fixed">
+          <parent link="Link1Upper"/>
+          <child link="Link1Lower"/>
+          <origin xyz="0 0 -0.1" rpy="0 0 0"/>
+        </joint>
+
+	<link name="Link1Lower">
 		<visual>
 			<geometry>
-				<mesh filename="${mesh_dir}/BaseUpperPlate.stl" scale="${scale3}"/>
+				<mesh filename="${mesh_dir}/Link1Lower.stl" scale="${scale3}"/>
 			</geometry>
 			<material name="red"/>
-			<origin xyz="0 0 10" rpy="0 0 0"/>
+			<origin xyz="0 0 0" rpy="0 0 0"/>
 		</visual>
 	</link>
 
-	<link name="Link2Lower">
-		<visual>
-			<geometry>
-				<mesh filename="${mesh_dir}/BaseUpperPlate.stl" scale="${scale3}"/>
-			</geometry>
-			<material name="red"/>
-			<origin xyz="0 0 10" rpy="0 0 0"/>
-		</visual>
-	</link>
+        <joint name="Link1Lower_to_Link2Left" type="revolute">
+          <parent link="Link1Lower"/>
+          <child link="Link2Left"/>
+          <origin xyz="0.1 0 0" rpy="0 0 0"/>
+          <axis xyz="0 0 1"/>
+          <limit upper="${pi/2}" lower="${-pi/2}" effort="1000" velocity="0.5"/>
+        </joint>
 
 	<link name="Link2Left">
 		<visual>
 			<geometry>
-				<mesh filename="${mesh_dir}/BaseUpperPlate.stl" scale="${scale3}"/>
+				<mesh filename="${mesh_dir}/Link2Left.stl" scale="${scale3}"/>
 			</geometry>
-			<material name="red"/>
-			<origin xyz="0 0 10" rpy="0 0 0"/>
+			<material name="green"/>
+			<origin xyz="0 0 0" rpy="0 0 0"/>
 		</visual>
 	</link>
+
+        <joint name="Link2Left_to_Link2Right" type="fixed">
+          <parent link="Link2Left"/>
+          <child link="Link2Right"/>
+          <origin xyz="0.1 0 0" rpy="0 0 0"/>
+        </joint>
 
 	<link name="Link2Right">
 		<visual>
 			<geometry>
-				<mesh filename="${mesh_dir}/BaseUpperPlate.stl" scale="${scale3}"/>
+				<mesh filename="${mesh_dir}/Link2Right.stl" scale="${scale3}"/>
 			</geometry>
-			<material name="red"/>
-			<origin xyz="0 0 10" rpy="0 0 0"/>
+			<material name="green"/>
+			<origin xyz="0 0 0" rpy="0 0 0"/>
 		</visual>
 	</link>
 
+        <joint name="Link2Right_to_Link3Left" type="revolute">
+          <parent link="Link2Right"/>
+          <child link="Link3Left"/>
+          <origin xyz="0.1 0 0" rpy="0 0 0"/>
+          <axis xyz="0 0 1"/>
+          <limit upper="${pi/2}" lower="${-pi/2}" effort="1000" velocity="0.5"/>
+        </joint>
 
 	<link name="Link3Left">
 		<visual>
 			<geometry>
-				<mesh filename="${mesh_dir}/BaseUpperPlate.stl" scale="${scale3}"/>
+				<mesh filename="${mesh_dir}/Link3Left.stl" scale="${scale3}"/>
 			</geometry>
-			<material name="red"/>
-			<origin xyz="0 0 10" rpy="0 0 0"/>
+			<material name="white"/>
+			<origin xyz="0 0 0" rpy="0 0 0"/>
 		</visual>
 	</link>
+
+        <joint name="Link3Left_to_Link3Right" type="fixed">
+          <parent link="Link3Left"/>
+          <child link="Link3Right"/>
+          <origin xyz="0 0 -0.1" rpy="0 0 0"/>
+        </joint>
 
 	<link name="Link3Right">
 		<visual>
 			<geometry>
-				<mesh filename="${mesh_dir}/BaseUpperPlate.stl" scale="${scale3}"/>
+				<mesh filename="${mesh_dir}/Link3Right.stl" scale="${scale3}"/>
 			</geometry>
-			<material name="red"/>
-			<origin xyz="0 0 10" rpy="0 0 0"/>
+			<material name="white"/>
+			<origin xyz="0 0 0" rpy="0 0 0"/>
 		</visual>
 	</link>
+
+        <joint name="Link3Right_to_EndEffector" type="fixed">
+          <parent link="Link3Right"/>
+          <child link="EndEffector"/>
+          <origin xyz="0 0 -0.1" rpy="0 0 0"/>
+        </joint>
 
 	<link name="EndEffector">
 		<visual>
 			<geometry>
-				<mesh filename="${mesh_dir}/BaseUpperPlate.stl" scale="${scale3}"/>
+				<mesh filename="${mesh_dir}/EndEffector.stl" scale="${scale3}"/>
 			</geometry>
-			<material name="red"/>
-			<origin xyz="0 0 10" rpy="0 0 0"/>
+			<material name="blue"/>
+			<origin xyz="0 0 0" rpy="0 0 0"/>
 		</visual>
 	</link>
 
-	<!--  Servo Seats  -->
-	<link name="MG90SSeat">
-		<visual>
-			<geometry>
-				<mesh filename="${mesh_dir}/BaseUpperPlate.stl" scale="${scale3}"/>
-			</geometry>
-			<material name="red"/>
-			<origin xyz="0 0 10" rpy="0 0 0"/>
-		</visual>
-	</link>
-
-	<link name="MG996RSeat">
-		<visual>
-			<geometry>
-				<mesh filename="${mesh_dir}/BaseUpperPlate.stl" scale="${scale3}"/>
-			</geometry>
-			<material name="red"/>
-			<origin xyz="0 0 10" rpy="0 0 0"/>
-		</visual>
-	</link>
-
+        <!--  Servo seats  -->
 
 </robot>

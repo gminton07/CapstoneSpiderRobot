@@ -1,4 +1,12 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="spider">
 
+  <ros2_control name="SpiderCapstoneHardwareInterface">
+    <hardware>
+      <!--  Change to actual plugin  -->
+      <plugin>mock_components/GenericSystem</plugin>
+      <param name="calculate_dynamics">true</param>
+    </hardware>
+  </ros2_control>
+
 </robot>
