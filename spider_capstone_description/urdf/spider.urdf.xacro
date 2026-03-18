@@ -22,6 +22,25 @@
 	<xacro:property name="mesh_scale" value="0.001"/>
 	<xacro:property name="scale3" value="${mesh_scale} ${mesh_scale} ${mesh_scale}"/>
 
+        <xacro:macro name="MG90S" params="prefix">
+          <link name="${prefix}_MG90S">
+            <visual>
+              <geometry>
+                <mesh filename="${mesh_dir}/MG90SSeat.stl"/>
+              </geometry>
+            </visual>
+          </link>
+        </xacro:macro>
+        <xacro:macro name="MG996R" params="prefix">
+          <link name="${prefix}_MG996R">
+            <visual>
+              <geometry>
+                <mesh filename="${mesh_dir}/MG996RSeat.stl"/>
+              </geometry>
+            </visual>
+          </link>
+        </xacro:macro>
+
 	<!--  Define base  -->
 	<link name="base_link"/>
 
@@ -37,7 +56,7 @@
 				<mesh filename="${mesh_dir}/BaseLowerPlate.stl" scale="${scale3}"/>
 			</geometry>
 			<material name="blue"/>
-			<origin xyz="0 0 0" rpy="0 0 0"/>
+			<origin xyz="-0.0795 0.0877 0.021" rpy="${pi} 0 0"/>
 		</visual>
 	</link>
 
@@ -72,14 +91,14 @@
 				<mesh filename="${mesh_dir}/Link1Upper.stl" scale="${scale3}"/>
 			</geometry>
 			<material name="red"/>
-			<origin xyz="0 0 0" rpy="0 0 0"/>
+                        <origin xyz="-0.0106 0.0127 0" rpy="0 0 ${-pi/2}"/>
 		</visual>
 	</link>
 
         <joint name="Link1Upper_to_Link1Lower" type="fixed">
           <parent link="Link1Upper"/>
           <child link="Link1Lower"/>
-          <origin xyz="0 0 -0.1" rpy="0 0 0"/>
+          <origin xyz="0 0 0" rpy="0 0 0"/>
         </joint>
 
 	<link name="Link1Lower">
@@ -88,15 +107,15 @@
 				<mesh filename="${mesh_dir}/Link1Lower.stl" scale="${scale3}"/>
 			</geometry>
 			<material name="red"/>
-			<origin xyz="0 0 0" rpy="0 0 0"/>
+                        <origin xyz="-0.0106 0.0127 -0.02794" rpy="0 0 ${-pi/2}"/>
 		</visual>
 	</link>
 
         <joint name="Link1Lower_to_Link2Left" type="revolute">
           <parent link="Link1Lower"/>
           <child link="Link2Left"/>
-          <origin xyz="0.1 0 0" rpy="0 0 0"/>
-          <axis xyz="0 0 1"/>
+          <origin xyz="0.05123 0 0" rpy="0 0 0"/>
+          <axis xyz="0 1 0"/>
           <limit upper="${pi/2}" lower="${-pi/2}" effort="1000" velocity="0.5"/>
         </joint>
 
@@ -106,14 +125,14 @@
 				<mesh filename="${mesh_dir}/Link2Left.stl" scale="${scale3}"/>
 			</geometry>
 			<material name="green"/>
-			<origin xyz="0 0 0" rpy="0 0 0"/>
+			<origin xyz="-0.0331 0.0283 -0.016" rpy="0 0 ${-pi/2}"/>
 		</visual>
 	</link>
 
         <joint name="Link2Left_to_Link2Right" type="fixed">
           <parent link="Link2Left"/>
           <child link="Link2Right"/>
-          <origin xyz="0.1 0 0" rpy="0 0 0"/>
+          <origin xyz="0 0 0" rpy="0 0 0"/>
         </joint>
 
 	<link name="Link2Right">
@@ -122,14 +141,14 @@
 				<mesh filename="${mesh_dir}/Link2Right.stl" scale="${scale3}"/>
 			</geometry>
 			<material name="green"/>
-			<origin xyz="0 0 0" rpy="0 0 0"/>
+			<origin xyz="-0.03294 0 -0.015" rpy="0 0 ${-pi/2}"/>
 		</visual>
 	</link>
 
         <joint name="Link2Right_to_Link3Left" type="revolute">
           <parent link="Link2Right"/>
           <child link="Link3Left"/>
-          <origin xyz="0.1 0 0" rpy="0 0 0"/>
+          <origin xyz="0.0933 0.00127 0" rpy="0 0 0"/>
           <axis xyz="0 0 1"/>
           <limit upper="${pi/2}" lower="${-pi/2}" effort="1000" velocity="0.5"/>
         </joint>
@@ -140,14 +159,14 @@
 				<mesh filename="${mesh_dir}/Link3Left.stl" scale="${scale3}"/>
 			</geometry>
 			<material name="white"/>
-			<origin xyz="0 0 0" rpy="0 0 0"/>
+			<origin xyz="-0.126 0.0181 -0.013" rpy="0 0 ${-pi/2}"/>
 		</visual>
 	</link>
 
         <joint name="Link3Left_to_Link3Right" type="fixed">
           <parent link="Link3Left"/>
           <child link="Link3Right"/>
-          <origin xyz="0 0 -0.1" rpy="0 0 0"/>
+          <origin xyz="0 -0.00254 0" rpy="0 0 0"/>
         </joint>
 
 	<link name="Link3Right">
@@ -156,14 +175,14 @@
 				<mesh filename="${mesh_dir}/Link3Right.stl" scale="${scale3}"/>
 			</geometry>
 			<material name="white"/>
-			<origin xyz="0 0 0" rpy="0 0 0"/>
+			<origin xyz="-0.126 0 -0.013" rpy="0 0 ${-pi/2}"/>
 		</visual>
 	</link>
 
         <joint name="Link3Right_to_EndEffector" type="fixed">
           <parent link="Link3Right"/>
           <child link="EndEffector"/>
-          <origin xyz="0 0 -0.1" rpy="0 0 0"/>
+          <origin xyz="0.048 0.00127 0.0063" rpy="0 0 0"/>
         </joint>
 
 	<link name="EndEffector">
@@ -172,7 +191,7 @@
 				<mesh filename="${mesh_dir}/EndEffector.stl" scale="${scale3}"/>
 			</geometry>
 			<material name="blue"/>
-			<origin xyz="0 0 0" rpy="0 0 0"/>
+			<origin xyz="-0.03638 0.01884 0.0066" rpy="${pi} 0 0"/>
 		</visual>
 	</link>
 
