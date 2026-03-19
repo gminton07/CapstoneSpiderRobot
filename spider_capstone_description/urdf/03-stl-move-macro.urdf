@@ -42,7 +42,7 @@
       </visual>
     </link>
     
-    <joint name="${prefix}_shoulder" type="revolute">
+    <joint name="${prefix}_hip" type="revolute">
       <axis xyz="0 0 1"/>
       <limit effort="1000" lower="${-pi/2}" upper="${pi/2}" velocity="0.5"/>
       <parent link="${prefix}_shoulder_base"/>
@@ -60,7 +60,7 @@
       </visual>
     </link>
 
-    <joint name="${prefix}_elbow" type="revolute">
+    <joint name="${prefix}_knee" type="revolute">
       <axis xyz="0 0 1"/>
       <limit effort="1000" lower="${-pi/2}" upper="${pi/2}" velocity="0.5"/>
       <parent link="${prefix}_Link1"/>
@@ -78,7 +78,7 @@
       </visual>
     </link>
 
-    <joint name="${prefix}_wrist" type="revolute">
+    <joint name="${prefix}_ankle" type="revolute">
       <axis xyz="0 0 1"/>
       <limit effort="1000" lower="${-pi/2}" upper="${pi/2}" velocity="0.5"/>
       <parent link="${prefix}_Link2"/>

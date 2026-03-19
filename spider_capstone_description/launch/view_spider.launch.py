@@ -12,8 +12,6 @@ def generate_launch_description():
     model = LaunchConfiguration('model')
     rviz_config = LaunchConfiguration('rviz_config')
     use_gui = LaunchConfiguration('gui')
-    # TODO:
-    # jsp_node = LaunchConfiguration('jsp_node')    # Choose which joint_state_publisher to use
 
     # Robot description
     robot_description = Command([
@@ -30,7 +28,7 @@ def generate_launch_description():
         # Declared arguments
         DeclareLaunchArgument(
             'model',
-            default_value='03-stl-move-macro.urdf',
+            default_value='spider.urdf.xacro',
             description='URDF/Xacro file'
             ),
 
@@ -45,9 +43,6 @@ def generate_launch_description():
             default_value='true',
             description='Use joint_state_publisher_gui'
         ),
-
-        # TODO:
-        # DeclareLaunchArgument('jsp_node')
 
         # Nodes
         Node(
@@ -65,10 +60,6 @@ def generate_launch_description():
             condition=IfCondition(use_gui),
             output='screen'
             ),
-
-        # TODO:
-        # Node(jsp_node, condition=UnlessCondition(use_gui))
-        # Only launch this if joint_state_publisher_gui is NOT in use
 
         Node(
             package='rviz2',
