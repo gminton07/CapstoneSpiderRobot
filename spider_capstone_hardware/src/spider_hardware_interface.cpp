@@ -22,7 +22,6 @@ namespace spider_capstone_hardware {
 		}
 
 		// Get robot model info and resize arrays
-
 		size_t num_joints = info_.joints.size();
 
 		hw_positions_.resize(num_joints, 0.0);
@@ -38,10 +37,6 @@ namespace spider_capstone_hardware {
 	hardware_interface::CallbackReturn SpiderHardwareInterface::on_configure(
 			const rclcpp_lifecycle::State &)
 	{
-		// Setup the serial communications with SERVO2040
-		//
-		//
-
 		RCLCPP_INFO(rclcpp::get_logger("SpiderHardwareInterface"),
 				"Configuring hardware...");
 
@@ -51,10 +46,6 @@ namespace spider_capstone_hardware {
 	hardware_interface::CallbackReturn SpiderHardwareInterface::on_cleanup(
 	  const rclcpp_lifecycle::State &)
 	{
-	  // Disconnect from serial communications
-	  //
-	  //
-
 	  RCLCPP_INFO(rclcpp::get_logger("SpiderHardwareInterface"),
 		      "Cleaning up hardware...");
 
@@ -64,10 +55,6 @@ namespace spider_capstone_hardware {
 	hardware_interface::CallbackReturn SpiderHardwareInterface::on_activate(
 	  const rclcpp_lifecycle::State &)
 	{
-	  // Power the hardware
-	  // Enable the servos
-	  //
-
 	  RCLCPP_INFO(rclcpp::get_logger("SpiderHardwareInterface"),
 		      "Activating hardware...");
 
@@ -80,10 +67,6 @@ namespace spider_capstone_hardware {
 	hardware_interface::CallbackReturn SpiderHardwareInterface::on_deactivate(
 	  const rclcpp_lifecycle::State &)
 	{
-	  // Disable servos
-	  // Depower hardware
-	  //
-
 	  RCLCPP_INFO(rclcpp::get_logger("SpiderHardwareInterface"),
 		      "Deactivating hardware...");
 
@@ -94,10 +77,6 @@ namespace spider_capstone_hardware {
 	hardware_interface::CallbackReturn SpiderHardwareInterface::on_shutdown(
 	  const rclcpp_lifecycle::State &)
 	{
-	  // Turn off hardware gracefully
-	  //
-	  //
-
 	  RCLCPP_INFO(rclcpp::get_logger("SpiderHardwareInterface"),
 		      "Shutting down hardware...");
 
@@ -107,10 +86,6 @@ namespace spider_capstone_hardware {
 	hardware_interface::CallbackReturn SpiderHardwareInterface::on_error(
 	  const rclcpp_lifecycle::State &)
 	{
-	// Attempt to handle errors from each method
-	//
-	//
-	
 	  RCLCPP_ERROR(rclcpp::get_logger("SpiderHardwareInterface"),
 		       "Error in hardware interface!");
 
@@ -155,11 +130,6 @@ namespace spider_capstone_hardware {
 	  const rclcpp::Time &,
 	  const rclcpp::Duration &)
 	{
-	// Read states from the hardware and store to
-	// hw_positions_ && hw_velocities_
-	// from export_state_interfaces
-	//
-	
 	  // Fake hardware: just reflect commands as states
 	  for (size_t i = 0; i < hw_positions_.size(); ++i)
 	  {
@@ -174,21 +144,14 @@ namespace spider_capstone_hardware {
 	  const rclcpp::Time &,
 	  const rclcpp::Duration &)
 	{
-	// Command hardware with hw_commands_ from
-	// export_command_interfaces
-	//
-	
-	  // In real hardware:
-	  // send hw_commands_ to motors via UART/USB
-
 	  return hardware_interface::return_type::OK;
 	}
 
+}  // namespace spider_capstone_hardware
 
+// <-- Moved macro OUTSIDE the namespace for correct global linkage
 #include "pluginlib/class_list_macros.hpp"
 
 PLUGINLIB_EXPORT_CLASS(
 		spider_capstone_hardware::SpiderHardwareInterface,
 		hardware_interface::SystemInterface)
-	
-}  // namespace spider_capstone_hardware

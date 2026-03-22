@@ -1,18 +1,22 @@
 #include <gmock/gmock.h>
 #include <memory>
+#include <cstdlib>
 
 #include "hardware_interface/system_interface.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "hardware_interface/hardware_info.hpp"
 #include "pluginlib/class_loader.hpp"
-#include <cstdlib>
 
 using hardware_interface::SystemInterface;
 
 TEST(SpiderHardwareTest, LoadPlugin) {
-	setenv("AMENT_PREFIX_PATH", getenv("AMENT_PREFIX_PATH"), 1);
+	// Added a null check just in case the env var isn't set yet to avoid segfaults
+	const char* ament_prefix = getenv("AMENT_PREFIX_PATH");
+	setenv("AMENT_PREFIX_PATH", ament_prefix ? ament_prefix : "", 1);
+
+	// <-- Corrected to "hardware_interface"
 	pluginlib::ClassLoader<SystemInterface> loader(
-			"spider_capstone_hardware",
+			"hardware_interface",
 			"hardware_interface::SystemInterface");
 
 	EXPECT_NO_THROW({
@@ -22,8 +26,9 @@ TEST(SpiderHardwareTest, LoadPlugin) {
 }
 
 TEST(SpiderHardwareTest, InitAndExportInterfaces) {
+	// <-- Corrected to "hardware_interface"
 	pluginlib::ClassLoader<SystemInterface> loader(
-		"spider_capstone_hardware",
+		"hardware_interface",
 		"hardware_interface::SystemInterface");
 
 	auto hw = loader.createSharedInstance("spider_capstone_hardware/SpiderHardwareInterface");
@@ -35,14 +40,20 @@ TEST(SpiderHardwareTest, InitAndExportInterfaces) {
 	hardware_interface::ComponentInfo joint;
 	joint.name = "joint1";
 
-	joint.command_interfaces.push_back(
-		{"position", ""});
+	// Changed to direct struct assignments for cleaner compatibility across versions
+	hardware_interface::InterfaceInfo pos_cmd;
+	pos_cmd.name = "position";
+	joint.command_interfaces.push_back(pos_cmd);
 
-	joint.state_interfaces.push_back(
-		{"position", "velocity", ""});
+	hardware_interface::InterfaceInfo pos_state;
+	pos_state.name = "position";
+	joint.state_interfaces.push_back(pos_state);
+
+	hardware_interface::InterfaceInfo vel_state;
+	vel_state.name = "velocity";
+	joint.state_interfaces.push_back(vel_state);
 
 	info.joints.push_back(joint);
-
 	params.hardware_info = info;
 
 	// Initialize
