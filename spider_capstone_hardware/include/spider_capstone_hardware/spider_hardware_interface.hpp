@@ -10,7 +10,7 @@
 // ROS2 libraries
 #include "hardware_interface/system_interface.hpp"
 #include "hardware_interface/types/hardware_interface_return_values.hpp"
-#include "hardware_interface/types/hardware_component_interface_params.hpp" // <-- Added this header
+#include "hardware_interface/types/hardware_component_interface_params.hpp"
 #include "hardware_interface/handle.hpp"
 #include "hardware_interface/hardware_info.hpp"
 #include "rclcpp_lifecycle/state.hpp"
@@ -67,6 +67,10 @@ namespace spider_capstone_hardware
 			std::vector<double> hw_positions_;
 			std::vector<double> hw_velocities_;
 			std::vector<double> hw_commands_;
+
+			// Serial communications
+			int serial_fd_ = -1;
+			std::string send_and_receive(const std::string& msg);
 	};
 
 } // namespace spider_capstone_hardware
