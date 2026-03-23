@@ -88,11 +88,6 @@ if(BUILD_TESTING)
   )
 
   add_dependencies(test_spider_hardware ${PROJECT_NAME})
-
-  # Ensure pluginlib can see installed package
-  set_tests_properties(test_spider_hardware PROPERTIES
-    ENVIRONMENT "AMENT_PREFIX_PATH=${CMAKE_INSTALL_PREFIX}"
-  )
 endif()
 
 # -----------------------

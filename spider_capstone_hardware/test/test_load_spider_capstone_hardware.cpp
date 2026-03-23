@@ -10,10 +10,6 @@
 using hardware_interface::SystemInterface;
 
 TEST(SpiderHardwareTest, LoadPlugin) {
-	// Added a null check just in case the env var isn't set yet to avoid segfaults
-	const char* ament_prefix = getenv("AMENT_PREFIX_PATH");
-	setenv("AMENT_PREFIX_PATH", ament_prefix ? ament_prefix : "", 1);
-
 	// <-- Corrected to "hardware_interface"
 	pluginlib::ClassLoader<SystemInterface> loader(
 			"hardware_interface",

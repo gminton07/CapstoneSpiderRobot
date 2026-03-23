@@ -4,7 +4,7 @@
   <ros2_control name="SpiderCapstoneHardwareInterface" type="system">
     <hardware>
       <!--  Change to actual plugin  -->
-      <plugin>mock_components/GenericSystem</plugin>
+      <plugin>spider_capstone_hardware/SpiderHardwareInterface</plugin>
       <param name="calculate_dynamics">true</param>
     </hardware>
 

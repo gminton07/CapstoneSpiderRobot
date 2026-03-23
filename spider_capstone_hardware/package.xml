@@ -21,7 +21,7 @@
 
   <!-- 🔥 THIS IS THE MOST IMPORTANT LINE -->
   <export>
-    <build_type>ament_cmake<build_type>
+    <build_type>ament_cmake</build_type>
     <hardware_interface plugin="${prefix}/plugin.xml"/>
   </export>
 </package>
