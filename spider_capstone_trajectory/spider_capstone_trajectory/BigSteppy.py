@@ -66,8 +66,10 @@ class JointTrajectoryPublisher(Node): # nodes are class objects, what defines it
                                4: publisher4_} 
 
         self.duration_step = .1  # how long each step should take, 
-        self.timer_ = self.create_timer(self.duration_step*22, self.publish_trajectory) # makes timer, for timing actions. 15 default
+        self.timer_ = self.create_timer(self.duration_step*21, self.publish_trajectory) # makes timer, for timing actions. 15 default
         self.get_logger().info('Joint trajectory publisher started!')                   # try number of points?
+
+        self.point_4Leg_array = self.create_angle_array() #creates the path. Here it only creates 1 and reuses it.
 
     def urdf_callback(self, msg: JointTrajectory): #extracts names of joints from urdf tree.
         '''
@@ -143,7 +145,7 @@ class JointTrajectoryPublisher(Node): # nodes are class objects, what defines it
             point_array_BL.append(theta_BL)
             point_array_BR.append(theta_BR)
             
-        return [point_array_FR, point_array_FL, point_array_BL, point_array_BR]
+        return {1: point_array_FR, 2: point_array_FL, 3: point_array_BL, 4: point_array_BR}
 
     def publish_trajectory(self):
         self.get_logger().info('publish_trajectory') # send logger message (shows up in terminal for debugging)
@@ -153,17 +155,18 @@ class JointTrajectoryPublisher(Node): # nodes are class objects, what defines it
         msg_FL = JointTrajectory() 
         msg_BL = JointTrajectory() 
         msg_BR = JointTrajectory() # creates an object of jointTrajectory Message type
-        msg = [msg_FR, msg_FL, msg_BL, msg_BR]
-        #for msg_i in msg:
-
-        msg[0].header.stamp = self.get_clock().now().to_msg() # timestamps message
-        msg[0].header.frame_id = 'base_link' # its an id, has to be here
-        msg[1].header.stamp = self.get_clock().now().to_msg() # timestamps message
-        msg[1].header.frame_id = 'base_link' # its an id, has to be here
-        msg[2].header.stamp = self.get_clock().now().to_msg() # timestamps message
-        msg[2].header.frame_id = 'base_link' # its an id, has to be here
-        msg[3].header.stamp = self.get_clock().now().to_msg() # timestamps message
-        msg[3].header.frame_id = 'base_link' # its an id, has to be here
+        msg = {1: msg_FR, 2: msg_FL, 3: msg_BL, 4: msg_BR} #array became disctonary :D
+        
+        for i in msg: # honest no clue whatthis is for, does not crash if I comment it out.
+            msg[i].header.stamp = self.get_clock().now().to_msg() # timestamps message
+            msg[i].header.frame_id = 'base_link' # its an id, has to be here
+            #print("test",i)
+        # msg[1].header.stamp = self.get_clock().now().to_msg() # timestamps message
+        # msg[1].header.frame_id = 'base_link' # its an id, has to be here
+        # msg[2].header.stamp = self.get_clock().now().to_msg() # timestamps message
+        # msg[2].header.frame_id = 'base_link' # its an id, has to be here
+        # msg[3].header.stamp = self.get_clock().now().to_msg() # timestamps message
+        # msg[3].header.frame_id = 'base_link' # its an id, has to be here
 
 
         ## Create trajectory point
@@ -183,26 +186,25 @@ class JointTrajectoryPublisher(Node): # nodes are class objects, what defines it
             [0.0, 0.0, 0.0],
         ]
 
-        point_4Leg_array = self.create_angle_array()
         point_duration = 0.0 # 3 angles, duragtion. This tells how long travel time should take. (we guess this)
         # functionally does wha tpause(.01) does but properly. 
 
         ## Append points to trajectory
         for j in range(1, 4+1):
             #msg.points = [] # resets points so messages dont contaminate each other
-            for points in point_4Leg_array[j-1]: #point_array: # only runs once, part of set up. (packages each point for message sendoff)
+            for points in self.point_4Leg_array[j]: #point_array: # only runs once, part of set up. (packages each point for message sendoff)
                 point = JointTrajectoryPoint()  ## note/\ every other array index starts at 1 (why?), the j-1 is because point_4leg_array starts at 0
                 point.positions = points
                 point.time_from_start = Duration(seconds=point_duration).to_msg() #adds how much time it takes to get to point.
                 point_duration += self.duration_step
 
-                msg[j-1].points.append(point) #adds points to end of message, msg gets overwritten every time.
+                msg[j].points.append(point) #adds points to end of message, msg gets overwritten every time.
 
             ## Publish JointTrajectory message, idex notes: 1 is FR, 2>FL, 3>BL, 4>BR
             #for i in range(1, 4+1): # loop takes joint names (stored chain names)
-            msg[j-1].joint_names = self.chain_names[j] # for like angle 1 gets asssigned to joint *_sholder and such.
-            self.jtc_publishers[j].publish(msg[j-1]) # what sends out the message neil added i here.
-            self.get_logger().info(f'Published joint trajectory to controller {j}. Points: {len(msg[j-1].points)}')
+            msg[j].joint_names = self.chain_names[j] # for like angle 1 gets asssigned to joint *_sholder and such.
+            self.jtc_publishers[j].publish(msg[j]) # what sends out the message neil added i here.
+            self.get_logger().info(f'Published joint trajectory to controller {j}. Points: {len(msg[j].points)}')
 
 def get_joint_names(chain): #kdl wrapper library (kinmatics and dynamics)
     joint_names = []        # just gets names of MOVEABLE joints
