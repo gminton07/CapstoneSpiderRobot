@@ -1,14 +1,6 @@
 # CapstoneSpiderRobot
 Capstone project: developing quadruped spider robot
 
-## Tasks
-Create spreadsheet for who is doing what & how ist going? Like WUAIR?
-
-* __servo__
-  * Update message format to accept float[12] of joint positions.
-* __trajectory_publisher__
-  * Integrate other python into a JointTrajectory msg publisher
-
 ## Initial Setup
 
 ```bash
@@ -68,6 +60,11 @@ rosdep update
       - model
       - rviz_config
       - gui
+
+* __spider_capstone_hardware__
+  - The hardware interface to work with our Servo2040 servo control board
+  - Plugin: spider_capstone_hardware/SpiderCapstoneInterface
+  - Loaded as the hardware_interface in spider.ros2_control.xacro of spider_capstone_description (this is the default URDF now)
 
 * __spider_capstone_trajectory__
   - Calculate and publish trajectory messages to the controller stack
