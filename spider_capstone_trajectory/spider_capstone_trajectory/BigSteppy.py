@@ -168,24 +168,6 @@ class JointTrajectoryPublisher(Node): # nodes are class objects, what defines it
         # msg[3].header.stamp = self.get_clock().now().to_msg() # timestamps message
         # msg[3].header.frame_id = 'base_link' # its an id, has to be here
 
-
-        ## Create trajectory point
-        point_array = [ # custom path made of angles 
-            [0.0, 0.0, 0.0],
-            [pi/2, 0.0, 0.0],
-            [0.0, 0.0, 0.0],
-            [-pi/2, 0.0, 0.0],
-            [0.0, 0.0, 0.0],
-            [0.0, pi/2, 0.0],
-            [0.0, 0.0, 0.0],
-            [0.0, -pi/2, 0.0],
-            [0.0, 0.0, 0.0],
-            [0.0, 0.0, pi/2],
-            [0.0, 0.0, 0.0],
-            [0.0, 0.0, -pi/2],
-            [0.0, 0.0, 0.0],
-        ]
-
         point_duration = 0.0 # 3 angles, duragtion. This tells how long travel time should take. (we guess this)
         # functionally does wha tpause(.01) does but properly. 
 
