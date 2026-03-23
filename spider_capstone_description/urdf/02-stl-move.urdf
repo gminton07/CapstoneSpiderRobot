@@ -16,7 +16,7 @@
   </material>
 
   <xacro:property name="mesh_dir"
-      value="package://spider_capstone_description/meshes"/>
+      value="package://spider_capstone_description/meshes/Prototype"/>
   <xacro:property name="mesh_scale" value="0.001"/>
   <xacro:property name="offset_scale" value="150"/>
 

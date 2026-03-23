@@ -1,75 +1,79 @@
-# ================================
-# RP2040 MicroPython USB CDC Script
-# ================================
+# ============================
+# servo2040 MicroPython script
+# Version 2
+# Interface with ros2_control
+# Created: 12 Mar, 2026
+# ============================
+
+# ************************
+# Command Format:
+# COMMAND arg1 arg2 arg3 ...
+#
+# COMMANDS: PING, CONFIGURE, CLEANUP, ACTIVATE, DEACTIVATE, SHUTDOWN, READ, WRITE
+# args: float numbers
+# ************************
+
 
 # Import packages
-import sys
-import select
-import time
+import sys, select, time
 from servo import servo2040, Servo
 # Import user code
-import LED_RAINBOW_code
-from get_current import get_current
 
-#from analog import Analog
-import math
+def handle_command(line: str) -> None:
+    # Separate words and parse args
+    parts = line.split()
+    cmd = parts[0]
+    args = [float(x) for x in parts[1:]]
 
-### Setup the servos ###
-s = []
-NUM_SERVOS = 3
-for i in range(NUM_SERVOS):
-    # getattr() for dynamic looping
-    s.append(Servo(getattr(servo2040, f'SERVO_{i+1}')))
+    if not parts: return
 
-for servo in s:
-    servo.enable()
-### Setup the servos ###
-
-def handle_command(cmd):
-    parts = cmd.strip().split()
-
-    if not parts:
-        return
-
-    if parts[0] == "PING":
+    if cmd == "PING":
         print("PONG")
 
-    elif parts[0] == "LED":
-        # Example placeholder command
-        print("ACK LED")
-        LED_RAINBOW_code.led_rainbow()
-        
-    elif parts[0] == '1':
-        print('BLUE')
-        LED_RAINBOW_code.led_color('blue')
-        
-    elif parts[0] == 'SERVO':
-        try:
-            s[0].value(float(parts[1]))
-            s[1].value(float(parts[2]))
-            s[2].value(float(parts[3]))
-            print('Servo positions set')
-            print(f'{get_current()=}')
-        except IndexError:
-            print('SERVO command must have 3 arguments')
-        
-    elif parts[0] == 'CURRENT':
-        current = get_current()
-        print(f'{current=}')
+    elif cmd == "CONFIGURE":
+        print("RP2040 Configured successfully")
 
-    else:
-        print("UNKNOWN:", cmd)
+    elif cmd == 'CLEANUP':
+        return None
+
+    elif cmd == "ACTIVATE":
+        activate_servos()
+        print("Activated")
+
+    elif cmd == "DEACTIVATE":
+        deactivate_servos()
+        print("Deactivated")
+
+    elif cmd == "SHUTDOWN":
+        print('Shutdown')
     
+    elif cmd == "READ":
+        print('Read')
 
-print("RP2040 USB CDC Ready")
+    elif cmd == "WRITE":
+        print('Write')
 
+def activate_servos():
+    ##### Begin: Change to servo group
+    NUM_SERVOS = 12
+    s = []
+    for i in range(NUM_SERVOS):
+        s.append(Servo(servo2040, i))
+        for servo in s:
+            servo.enable
+    ##### End: Change to servo group
+
+def deactivate_servos():
+    # servos delete/close
+    raise NotImplementedError
+
+# Read loop (non-blocking)
 while True:
-    # Non-blocking read
     if sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
         message = sys.stdin.readline().strip()
 
         if message:
-            print("Received:", message)
+            print("Received: ", message)
             handle_command(message)
 
-    time.sleep(0.01)
+    time.sleep(0.001)

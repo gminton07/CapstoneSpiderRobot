@@ -1,0 +1,9 @@
+<library path="spider_capstone_hardware">
+  <class name="spider_capstone_hardware/SpiderHardwareInterface"
+         type="spider_capstone_hardware::SpiderHardwareInterface"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+      A hardware interface for servo2040.
+    </description>
+  </class>
+</library>
