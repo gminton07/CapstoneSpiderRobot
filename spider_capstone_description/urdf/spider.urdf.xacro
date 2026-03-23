@@ -188,11 +188,11 @@
 
           <joint name="${prefix}_Link3Right_to_EndEffector" type="fixed">
             <parent link="${prefix}_Link3Right"/>
-            <child link="${prefix}_end_effector"/>
+            <child link="${prefix}_EndEffector"/>
             <origin xyz="0.048 0.00127 0.0063" rpy="0 0 0"/>
           </joint>
 
-          <link name="${prefix}_end_effector">
+          <link name="${prefix}_EndEffector">
                   <visual>
                           <geometry>
                                   <mesh filename="${mesh_dir}/EndEffector.stl" scale="${scale3}"/>
@@ -200,6 +200,20 @@
                           <material name="black"/>
                           <origin xyz="-0.03638 0.01884 0.0066" rpy="${pi} 0 0"/>
                   </visual>
+          </link>
+
+          <joint name="${prefix}_EndEffector_to_end_effector" type="fixed">
+            <parent link="${prefix}_EndEffector"/>
+            <child link="${prefix}_end_effector"/>
+            <origin xyz="0.06 0 -0.025" rpy="0 0 0"/>
+          </joint>
+
+          <link name="${prefix}_end_effector">
+            <visual>
+              <geometry>
+                <sphere radius="0.001"/>
+              </geometry>
+            </visual>
           </link>
         </xacro:macro>
 
