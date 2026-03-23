@@ -206,6 +206,8 @@ class JointTrajectoryPublisher(Node): # nodes are class objects, what defines it
             self.jtc_publishers[j].publish(msg[j]) # what sends out the message neil added i here.
             self.get_logger().info(f'Published joint trajectory to controller {j}. Points: {len(msg[j].points)}')
 
+
+
 def get_joint_names(chain): #kdl wrapper library (kinmatics and dynamics)
     joint_names = []        # just gets names of MOVEABLE joints
     # Loop through every segment in the chain
