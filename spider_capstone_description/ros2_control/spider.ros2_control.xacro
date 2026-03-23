@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="spider">
+
+  <ros2_control name="SpiderCapstoneHardwareInterface" type="system">
+    <hardware>
+      <!--  Change to actual plugin  -->
+      <plugin>spider_capstone_hardware/SpiderHardwareInterface</plugin>
+      <param name="calculate_dynamics">true</param>
+    </hardware>
+
+    <xacro:macro name="ros2_control" params="prefix">
+      <joint name="${prefix}_hip">
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="${prefix}_knee">
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="${prefix}_ankle">
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+    </xacro:macro>
+
+    <xacro:ros2_control prefix="fr"/>
+    <xacro:ros2_control prefix="fl"/>
+    <xacro:ros2_control prefix="bl"/>
+    <xacro:ros2_control prefix="br"/>
+
+
+  </ros2_control>
+</robot>

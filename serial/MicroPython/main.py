@@ -1,75 +1,84 @@
-# ================================
-# RP2040 MicroPython USB CDC Script
-# ================================
+# ============================
+# servo2040 MicroPython script
+# Version 2
+# Interface with ros2_control
+# Created: 12 Mar, 2026
+# Updated 23 Mar, 2026
+# ============================
+
+# ************************
+# Command Format:
+# COMMAND arg1 arg2 arg3 ...
+#
+# COMMANDS: PING, ENABLE, DISABLE, MOVE
+# args: float numbers
+# ************************
+
 
 # Import packages
-import sys
-import select
-import time
+import sys, select, time
 from servo import servo2040, Servo
-# Import user code
-import LED_RAINBOW_code
-from get_current import get_current
+from math import pi
 
-#from analog import Analog
-import math
+# Create variables
+servos = []
 
-### Setup the servos ###
-s = []
-NUM_SERVOS = 3
-for i in range(NUM_SERVOS):
-    # getattr() for dynamic looping
-    s.append(Servo(getattr(servo2040, f'SERVO_{i+1}')))
+def handle_command(line: str) -> None:
+    # Separate words and parse args
+    parts = line.split()
+    cmd = parts[0]
+    args = [float(x) for x in parts[1:]]
 
-for servo in s:
-    servo.enable()
-### Setup the servos ###
+    if not parts: return
 
-def handle_command(cmd):
-    parts = cmd.strip().split()
-
-    if not parts:
-        return
-
-    if parts[0] == "PING":
+    if cmd == "PING":
         print("PONG")
 
-    elif parts[0] == "LED":
-        # Example placeholder command
-        print("ACK LED")
-        LED_RAINBOW_code.led_rainbow()
-        
-    elif parts[0] == '1':
-        print('BLUE')
-        LED_RAINBOW_code.led_color('blue')
-        
-    elif parts[0] == 'SERVO':
-        try:
-            s[0].value(float(parts[1]))
-            s[1].value(float(parts[2]))
-            s[2].value(float(parts[3]))
-            print('Servo positions set')
-            print(f'{get_current()=}')
-        except IndexError:
-            print('SERVO command must have 3 arguments')
-        
-    elif parts[0] == 'CURRENT':
-        current = get_current()
-        print(f'{current=}')
+    elif cmd == "ENABLE":
+        activate_servos()
+        print("Activated")
 
-    else:
-        print("UNKNOWN:", cmd)
-    
+    elif cmd == "DISABLE":
+        deactivate_servos()
+        print("Deactivated")
+        
+    elif cmd == "MOVE":
+        move_servos(args)
+        print("Moving")
+        
 
-print("RP2040 USB CDC Ready")
+def activate_servos():
+    ##### Begin: Change to servo group
+    NUM_SERVOS = 12
+    START_PIN = servo2040.SERVO_1
+    END_PIN = servo2040.SERVO_12
+    for i in range(START_PIN, END_PIN + 1):
+        servos.append(Servo(i))
+    for s in servos:
+        s.enable()
 
+    ##### End: Change to servo group
+
+def deactivate_servos():
+    for s in servos:
+        s.disable()
+        
+def move_servos(position):
+    for i in range(len(position)):
+        ang = rad_to_deg(position[i])
+        servos[i].value(ang)
+        
+def rad_to_deg(rad: float) -> float:
+    deg = rad * 180 / pi
+    return deg
+
+# Read loop (non-blocking)
 while True:
-    # Non-blocking read
     if sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
         message = sys.stdin.readline().strip()
 
         if message:
-            print("Received:", message)
+            #print("Received: ", message)
             handle_command(message)
 
-    time.sleep(0.01)
+    time.sleep(0.001)
