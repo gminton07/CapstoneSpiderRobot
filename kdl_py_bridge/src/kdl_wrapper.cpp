@@ -5,6 +5,7 @@
 #include <kdl/chain.hpp>
 #include <kdl/jntarray.hpp>
 #include <kdl/chainidsolver_recursive_newton_euler.hpp>
+#include <kdl/chainfksolverpos_recursive.hpp>
 #include <kdl/frames.hpp>
 
 namespace py = pybind11;
@@ -27,7 +28,7 @@ PYBIND11_MODULE(kdl_wrapper, m) {
 		.def("getNrOfSegments", &KDL::Tree::getNrOfSegments)
 		.def("getChain", [](KDL::Tree& self, const std::string& root, const std::string& tip) {
 			KDL::Chain chain;
-			self.getChain(root, tip, chain);
+			if (self.getChain(root, tip, chain)) throw std::runtime_error("Chain not found between specified links.");
 			return chain;
 		});
 
@@ -65,8 +66,37 @@ PYBIND11_MODULE(kdl_wrapper, m) {
 
 	// Get Vector (for Gravity)
     py::class_<KDL::Vector>(m, "Vector")
-        .def(py::init<double, double, double>());
+        .def(py::init<double, double, double>())
+		.def_property_readonly("x", [](const KDL::Vector& v) {return v.x();})
+		.def_property_readonly("y", [](const KDL::Vector& v) {return v.y();})
+		.def_property_readonly("z", [](const KDL::Vector& v) {return v.z();});
 
+	// Rotation (roll, pitch, yaw)
+	py::class_<KDL::Rotation>(m, "Rotation")
+		.def("GetRPY", [](const KDL::Rotation& r) {
+			double roll, pitch, yaw;
+			r.GetRPY(roll, pitch, yaw);
+			return py::make_tuple(roll, pitch, yaw);
+		});
+
+	// Frame (Pose containing Vector p and Rotation m)
+	py::class_<KDL::Frame>(m, "Frame")
+		.def(py::init<>())
+		.def_property_readonly("p", [](const KDL::Frame& f) {return f.p; })
+		.def_property_readonly("M", [](const KDL::Frame& f) {return f.M; });
+
+	// Forward kinematics (position)
+	py::class_<KDL::ChainFkSolverPos_recursive>(m, "ChainFkSolverPos_recursive")
+		.def(py::init<const KDL::Chain&>())
+		.def("JntToCart", [](KDL::ChainFkSolverPos_recursive& self, const KDL::JntArray& q_in) {
+			KDL::Frame p_out;
+			int status = self.JntToCart(q_in, p_out);
+			if (status < 0) {
+				throw std::runtime_error("FK Solver failed to calculate pose.");
+			}
+			return p_out;
+		});
+		
     // Get Inverse Dynamics Solver (RNE)
     py::class_<KDL::ChainIdSolver_RNE>(m, "ChainIdSolver_RNE")
         .def(py::init<KDL::Chain, KDL::Vector>())
