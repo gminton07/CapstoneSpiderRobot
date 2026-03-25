@@ -29,7 +29,7 @@ import numpy as np
 class JointTrajectoryPublisher(Node): # nodes are class objects, what defines it
     def __init__(self): # when create class, automatically runs on class creation
         super().__init__('BigSteppy')
-
+        self.temp_strafetest = 0
         # Create Subscriptions
         qos_profile = QoSProfile( #for getting xml string (robot description, recall from robotics class we used it for part 1)
             depth=1, #how deep in array
@@ -66,10 +66,19 @@ class JointTrajectoryPublisher(Node): # nodes are class objects, what defines it
                                4: publisher4_} 
 
         self.duration_step = .1  # how long each step should take, 
-        self.timer_ = self.create_timer(self.duration_step*21, self.publish_trajectory) # makes timer, for timing actions. 15 default
+        self.timer_ = self.create_timer(self.duration_step*20, self.publish_trajectory) # makes timer, for timing actions. 15 default
+        self.test_overide_timer_ = self.create_timer(60, self.override_walk) #TEMP DELETE ME AFTER DONE
         self.get_logger().info('Joint trajectory publisher started!')                   # try number of points?
 
-        self.point_4Leg_array = self.create_angle_array() #creates the path. Here it only creates 1 and reuses it.
+        self.walk_array_dict = {"Strafe Front":self.create_angle_array(0), #creates the path in multiple directions in a dictionary
+                                "Strafe Back":self.create_angle_array(np.pi),
+                                "Strafe Left":self.create_angle_array(np.pi*0.5),
+                                "Strafe Right":self.create_angle_array(np.pi*-0.5),
+                                "Strafe FrontLeft":self.create_angle_array(np.pi*0.25),
+                                "Strafe FrontRight":self.create_angle_array(np.pi*-0.25),
+                                "Strafe BackLeft":self.create_angle_array(np.pi*0.75),
+                                "Strafe BackRight":self.create_angle_array(np.pi*-0.75)}
+        self.strafe_direction = "Strafe Front" # initial walking direction
 
     def urdf_callback(self, msg: JointTrajectory): #extracts names of joints from urdf tree.
         '''
@@ -121,8 +130,8 @@ class JointTrajectoryPublisher(Node): # nodes are class objects, what defines it
             self.get_logger().error(f"Failed to setup KDL: {str(e)}")
     
 
-    def create_angle_array(self):
-        [FL,FR,BL,BR] = walking_cycle(0) #create point loop with correct offset for each leg
+    def create_angle_array(self,ang_direction):
+        [FL,FR,BL,BR] = walking_cycle(ang_direction) #create point loop with correct offset for each leg
 
         # Pull the points from the walking cycle #
         Points_FL = FL[0:3,:].T  # I believe this this strips off the extra 1?
@@ -130,7 +139,7 @@ class JointTrajectoryPublisher(Node): # nodes are class objects, what defines it
         Points_BL = BL[0:3,:].T
         Points_BR = BR[0:3,:].T
 
-        total_pts = 20 #number of points in a path, currently hardcoded. Needed for calibration reasons below.
+        total_pts = len(Points_BR)#number of points in a path, currently hardcoded. Needed for calibration reasons below.
         point_array_FL = []
         point_array_FR = []
         point_array_BL = []
@@ -147,6 +156,14 @@ class JointTrajectoryPublisher(Node): # nodes are class objects, what defines it
             
         return {1: point_array_FR, 2: point_array_FL, 3: point_array_BL, 4: point_array_BR}
 
+    def override_walk(self): # When called, changes the walking direction and restarts the walking loop
+        strafe_temp = ["Strafe FrontRight", "Strafe Right", "Strafe BackRight", "Strafe Back", "Strafe BackLeft", "Strafe Left", "Strafe FrontLeft", "Strafe Front"]
+        self.strafe_direction = strafe_temp[self.temp_strafetest] # basically just itterate overall directions to see if they work.
+        self.temp_strafetest = (self.temp_strafetest + 1) % 8     # so it repeats like a clock
+        print(f"Walk interupted, now going {self.strafe_direction}")
+        self.timer_.reset() # NOTE reset does NOT imedatly trigger the timer. Will need to handle this somehow
+        self.publish_trajectory() # call timer's target function. will be cut of when timer triggers?
+
     def publish_trajectory(self):
         self.get_logger().info('publish_trajectory') # send logger message (shows up in terminal for debugging)
                         # logger means print to consol here
@@ -161,32 +178,35 @@ class JointTrajectoryPublisher(Node): # nodes are class objects, what defines it
             msg[i].header.stamp = self.get_clock().now().to_msg() # timestamps message
             msg[i].header.frame_id = 'base_link' # its an id, has to be here
             #print("test",i)
-        # msg[1].header.stamp = self.get_clock().now().to_msg() # timestamps message
-        # msg[1].header.frame_id = 'base_link' # its an id, has to be here
-        # msg[2].header.stamp = self.get_clock().now().to_msg() # timestamps message
-        # msg[2].header.frame_id = 'base_link' # its an id, has to be here
-        # msg[3].header.stamp = self.get_clock().now().to_msg() # timestamps message
-        # msg[3].header.frame_id = 'base_link' # its an id, has to be here
 
-        point_duration = 0.0 # 3 angles, duragtion. This tells how long travel time should take. (we guess this)
-        # functionally does wha tpause(.01) does but properly. 
+        
 
         ## Append points to trajectory
         for j in range(1, 4+1):
+            point_duration = 0.0 # 3 angles, duragtion. This tells how long travel time should take. (we guess this)
             #msg.points = [] # resets points so messages dont contaminate each other
-            for points in self.point_4Leg_array[j]: #point_array: # only runs once, part of set up. (packages each point for message sendoff)
+            first_pt = self.walk_array_dict[self.strafe_direction][j][0]
+            for points in self.walk_array_dict[self.strafe_direction][j]: #point_array: # only runs once, part of set up. (packages each point for message sendoff)
                 point = JointTrajectoryPoint()  ## note/\ every other array index starts at 1 (why?), the j-1 is because point_4leg_array starts at 0
                 point.positions = points
                 point.time_from_start = Duration(seconds=point_duration).to_msg() #adds how much time it takes to get to point.
                 point_duration += self.duration_step
-
                 msg[j].points.append(point) #adds points to end of message, msg gets overwritten every time.
-
+            reset_pt = JointTrajectoryPoint()  ## note/\ every other array index starts at 1 (why?), the j-1 is because point_4leg_array starts at 0
+            reset_pt.positions = first_pt
+            reset_pt.time_from_start = Duration(seconds=point_duration).to_msg() #adds how much time it takes to get to point.
+            msg[j].points.append(reset_pt) # goes back to first point
+            
             ## Publish JointTrajectory message, idex notes: 1 is FR, 2>FL, 3>BL, 4>BR
             #for i in range(1, 4+1): # loop takes joint names (stored chain names)
             msg[j].joint_names = self.chain_names[j] # for like angle 1 gets asssigned to joint *_sholder and such.
             self.jtc_publishers[j].publish(msg[j]) # what sends out the message neil added i here.
             self.get_logger().info(f'Published joint trajectory to controller {j}. Points: {len(msg[j].points)}')
+        # j=2
+        # msg[j].joint_names = self.chain_names[j] # for like angle 1 gets asssigned to joint *_sholder and such.
+        # self.jtc_publishers[j].publish(msg[j]) # what sends out the message neil added i here.
+        # self.get_logger().info(f'Published joint trajectory to controller {j}. Points: {len(msg[j].points)}')
+
 
 
 
@@ -242,8 +262,8 @@ def get_joint_names(chain): #kdl wrapper library (kinmatics and dynamics)
 
 def main(): # makes object and spins up node
     rclpy.init()
-    node = JointTrajectoryPublisher() # 
-    rclpy.spin(node)
+    node = JointTrajectoryPublisher() # while in spin (state?) I think JointTrajectoryPublisher() acts as main loop?
+    rclpy.spin(node) # neil note: I think the node exists here until you hit ctrl^c or otherwise terminate node.
     node.destroy_node()
     rclpy.shutdown()
 
