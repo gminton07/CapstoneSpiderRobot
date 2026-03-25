@@ -2,7 +2,7 @@
 # servo2040 MicroPython script
 # Led control library
 # Created: 12 Mar, 2026
-# Updated 23 Mar, 2026
+# Updated 25 Mar, 2026
 # ============================
 
 import time
@@ -69,5 +69,8 @@ def led_color(color):
     elif color == 'off':
         hue = [0, 0, 0]
        
-    for i in range(servo2040.NUM_LEDS):
+    for i in range(servo2040.NUM_LEDS - 1):
         led_bar.set_rgb(i, hue[0], hue[1], hue[2])
+        
+def power_led():
+    led_bar.set_rgb(5, 100, 100, 100)

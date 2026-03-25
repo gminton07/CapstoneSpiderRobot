@@ -3,7 +3,7 @@
 # Version 2
 # Interface with ros2_control
 # Created: 12 Mar, 2026
-# Updated 23 Mar, 2026
+# Updated 25 Mar, 2026
 # ============================
 
 # ************************
@@ -18,6 +18,7 @@
 #   green:  Hardware enabled
 #   red:    Show an error
 #   off:    Hardware deactivated, turn light off
+#	POWER:	white, board is powered on
 # ************************
 
 
@@ -27,14 +28,14 @@ from servo import servo2040, Servo
 from math import pi
 
 # Import user modules
-from LED_RAINBOW_code import led_color
+from LED_RAINBOW_code import led_color, power_led
 
 # Create variables
 servos = []
 
 # Actions on startup
 print('Initialized')
-led_color('blue')
+power_led()
 
 def handle_command(line: str) -> None:
     # Separate words and parse args
