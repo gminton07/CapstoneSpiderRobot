@@ -18,6 +18,7 @@ from rclpy.duration import Duration
 from rclpy.qos import QoSProfile, DurabilityPolicy, ReliabilityPolicy
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from std_msgs.msg import String
+from sensor_msgs.msg import Joy         # for joystick subscription
 
 from math import pi
 import kdl_wrapper as kdl
@@ -41,6 +42,14 @@ class JointTrajectoryPublisher(Node): # nodes are class objects, what defines it
             '/robot_description',                      # topic name
             self.urdf_callback,                        # function to run when you recieve message
             qos_profile                                # just runs (ignore but still needed)
+        )
+
+        ## subscribe to the joy node:
+        self.joy_subscription_ = self.create_subscription(
+            Joy,     # I think its an array?
+            '/joy',
+            self.read_joystick,
+            10      # please dont crash whatever you are
         )
 
         # Create Publishers
@@ -129,7 +138,26 @@ class JointTrajectoryPublisher(Node): # nodes are class objects, what defines it
         except Exception as e:
             self.get_logger().error(f"Failed to setup KDL: {str(e)}")
     
-
+    def read_joystick(self, msg): # axes is defined in msg for joy subscriber,
+        joy_mag      = np.sqrt(msg.axes[1]**2 + msg.axes[0]**2)
+        if joy_mag > 0.8:
+            joy_left_ang = np.arctan2(msg.axes[0],msg.axes[1])
+            print(f'{joy_left_ang} mag: {joy_mag}')
+        # think in 8 chunks?
+            if (joy_left_ang <= 0.785 and joy_left_ang > 0)or (joy_left_ang >= -0.785 and joy_left_ang <= 0): 
+                self.strafe_direction = "Strafe Back"
+                print('front')
+            elif joy_left_ang >= 2.356 or joy_left_ang <= -2.356: 
+                self.strafe_direction = "Strafe Back"
+                print('back')
+            elif joy_left_ang >= 0.785 or joy_left_ang <= -0.785: 
+                self.strafe_direction = "Strafe Back"
+                print('left')             
+            else:
+                self.strafe_direction = "Strafe Front"
+                print("error")
+        
+    
     def create_angle_array(self,ang_direction):
         [FL,FR,BL,BR] = walking_cycle(ang_direction) #create point loop with correct offset for each leg
 
