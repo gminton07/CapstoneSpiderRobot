@@ -4,7 +4,7 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /Marker1
+        - /MarkerArray1
       Splitter Ratio: 0.5
     Tree Height: 199
   - Class: rviz_common/Views
@@ -320,43 +320,19 @@ Visualization Manager:
           BaseLowerPlate:
             BaseUpperPlate:
               {}
-            bl_Link1Upper:
-              bl_Link1Lower:
-                bl_Link2Left:
-                  bl_Link2Right:
-                    bl_Link3Left:
-                      bl_Link3Right:
-                        bl_EndEffector:
-                          bl_end_effector:
-                            {}
-            br_Link1Upper:
-              br_Link1Lower:
-                br_Link2Left:
-                  br_Link2Right:
-                    br_Link3Left:
-                      br_Link3Right:
-                        br_EndEffector:
-                          br_end_effector:
-                            {}
-            fl_Link1Upper:
-              fl_Link1Lower:
-                fl_Link2Left:
-                  fl_Link2Right:
-                    fl_Link3Left:
-                      fl_Link3Right:
-                        fl_EndEffector:
-                          fl_end_effector:
-                            {}
-            fr_Link1Upper:
-              fr_Link1Lower:
-                fr_Link2Left:
-                  fr_Link2Right:
-                    fr_Link3Left:
-                      fr_Link3Right:
-                        fr_EndEffector:
-                          fr_end_effector:
-                            {}
       Update Interval: 0
+      Value: true
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: true
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /joint_trajectory_plot
       Value: true
     - Class: rviz_default_plugins/Marker
       Enabled: true
@@ -370,19 +346,6 @@ Visualization Manager:
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /leg_workspace
-      Value: true
-    - Class: rviz_default_plugins/Marker
-      Enabled: true
-      Name: Marker
-      Namespaces:
-        joint_trajectory_plot: true
-      Topic:
-        Depth: 5
-        Durability Policy: Volatile
-        Filter size: 10
-        History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: /joint_trajectory_plot
       Value: true
   Enabled: true
   Global Options:
