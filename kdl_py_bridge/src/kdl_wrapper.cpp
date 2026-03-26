@@ -5,7 +5,10 @@
 #include <kdl/chain.hpp>
 #include <kdl/jntarray.hpp>
 #include <kdl/chainidsolver_recursive_newton_euler.hpp>
+#include <kdl/chainfksolverpos_recursive.hpp>
+#include <kdl/chainjnttojacsolver.hpp>
 #include <kdl/frames.hpp>
+#include <kdl/jacobian.hpp>
 
 namespace py = pybind11;
 
@@ -27,8 +30,37 @@ PYBIND11_MODULE(kdl_wrapper, m) {
 		.def("getNrOfSegments", &KDL::Tree::getNrOfSegments)
 		.def("getChain", [](KDL::Tree& self, const std::string& root, const std::string& tip) {
 			KDL::Chain chain;
-			self.getChain(root, tip, chain);
+			if (!self.getChain(root, tip, chain)) throw std::runtime_error("Chain not found between specified links.");
 			return chain;
+		})
+		.def("getSegmentNames", [](const KDL::Tree& self) {
+			std::vector<std::string> names;
+			// self.getSegments() returns a map where key is link name
+			for (const auto& pair : self.getSegments()) {
+				names.push_back(pair.first);
+			}
+			return names;
+		})
+        .def("getParent", [](const KDL::Tree& self, const std::string& link_name) {
+            // Get a reference to the internal map of segments
+            const auto& segments = self.getSegments();
+            auto it = segments.find(link_name);
+            
+            // If the link isn't in the tree at all
+            if (it == segments.end()) return std::string("NOT_FOUND");
+
+			if (it == self.getRootSegment()) return std::string("ROOT");
+            
+            // In KDL, TreeElements hold an iterator to their parent
+            auto parent_it = it->second.parent;
+            return parent_it->first;
+		})
+		.def("addSegmentToChain", [](KDL::Tree& self, KDL::Chain& chain, const std::string& segment_name) {
+			const auto& segments = self.getSegments();
+			auto it = segments.find(segment_name);
+			if (it != segments.end()) {
+				chain.addSegment(it->second.segment);
+			}
 		});
 
 	// Bind the Chain class
@@ -65,8 +97,53 @@ PYBIND11_MODULE(kdl_wrapper, m) {
 
 	// Get Vector (for Gravity)
     py::class_<KDL::Vector>(m, "Vector")
-        .def(py::init<double, double, double>());
+        .def(py::init<double, double, double>())
+		.def_property_readonly("x", [](const KDL::Vector& v) {return v.x();})
+		.def_property_readonly("y", [](const KDL::Vector& v) {return v.y();})
+		.def_property_readonly("z", [](const KDL::Vector& v) {return v.z();});
 
+	// Rotation (roll, pitch, yaw)
+	py::class_<KDL::Rotation>(m, "Rotation")
+		.def("GetRPY", [](const KDL::Rotation& r) {
+			double roll, pitch, yaw;
+			r.GetRPY(roll, pitch, yaw);
+			return py::make_tuple(roll, pitch, yaw);
+		});
+
+	// Frame (Pose containing Vector p and Rotation m)
+	py::class_<KDL::Frame>(m, "Frame")
+		.def(py::init<>())
+		.def_property_readonly("p", [](const KDL::Frame& f) {return f.p; })
+		.def_property_readonly("M", [](const KDL::Frame& f) {return f.M; });
+
+	// Jacobian
+    py::class_<KDL::Jacobian>(m, "Jacobian")
+        .def(py::init<unsigned int>())
+        .def("rows", &KDL::Jacobian::rows)
+        .def("columns", &KDL::Jacobian::columns)
+        .def("__getitem__", [](const KDL::Jacobian &self, int r, int c) {
+            return self(r,c);
+        });
+
+    // Jacobian Solver
+    py::class_<KDL::ChainJntToJacSolver>(m, "ChainJntToJacSolver")
+        .def(py::init<const KDL::Chain&>())
+        .def("JntToJac", [](KDL::ChainJntToJacSolver& self, const KDL::JntArray& q_in, KDL::Jacobian& jac_out) {
+            return self.JntToJac(q_in, jac_out);
+        });
+	
+	// Forward kinematics (position)
+	py::class_<KDL::ChainFkSolverPos_recursive>(m, "ChainFkSolverPos_recursive")
+		.def(py::init<const KDL::Chain&>())
+		.def("JntToCart", [](KDL::ChainFkSolverPos_recursive& self, const KDL::JntArray& q_in) {
+			KDL::Frame p_out;
+			int status = self.JntToCart(q_in, p_out);
+			if (status < 0) {
+				throw std::runtime_error("FK Solver failed to calculate pose.");
+			}
+			return p_out;
+		});
+		
     // Get Inverse Dynamics Solver (RNE)
     py::class_<KDL::ChainIdSolver_RNE>(m, "ChainIdSolver_RNE")
         .def(py::init<KDL::Chain, KDL::Vector>())

@@ -26,6 +26,7 @@ setup(
         'console_scripts': [
             'leg_2_joint_node = spider_capstone_visualize.leg_workspace_node:main',
             'leg_3_joint_node = spider_capstone_visualize.leg_3_joint_node:main',
+            f'joint_trajectory_plot = {package_name}.joint_trajectory_plot:main',
         ],
     },
 )
