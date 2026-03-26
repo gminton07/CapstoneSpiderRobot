@@ -19,6 +19,7 @@ from rclpy.qos import QoSProfile, DurabilityPolicy, ReliabilityPolicy
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from std_msgs.msg import String
 from sensor_msgs.msg import Joy         # for joystick subscription
+from sensor_msgs.msg import JointState  # grab leg current place
 
 from math import pi
 import kdl_wrapper as kdl
@@ -30,7 +31,7 @@ import numpy as np
 class JointTrajectoryPublisher(Node): # nodes are class objects, what defines it
     def __init__(self): # when create class, automatically runs on class creation
         super().__init__('BigSteppy')
-        self.temp_strafetest = 0
+        self.current_point = [] # this will store the point the trajectory controller is currently sending to servo2040
         # Create Subscriptions
         qos_profile = QoSProfile( #for getting xml string (robot description, recall from robotics class we used it for part 1)
             depth=1, #how deep in array
@@ -49,8 +50,15 @@ class JointTrajectoryPublisher(Node): # nodes are class objects, what defines it
             Joy,     # I think its an array?
             '/joy',
             self.read_joystick,
-            10      # please dont crash whatever you are
+            10    # how many messages can be sent at once for a topic?
         )
+        
+        ## subscribe to leg joinyt trajectory controllers (for clean state transition)
+        self.joint_state_sub = self.create_subscription(
+            JointState, '/joint_states', self.joint_state_callback, 
+            10
+        )
+
 
         # Create Publishers
         publisher1_ = self.create_publisher(
@@ -76,7 +84,6 @@ class JointTrajectoryPublisher(Node): # nodes are class objects, what defines it
 
         self.duration_step = .1  # how long each step should take, 
         self.timer_ = self.create_timer(self.duration_step*20, self.publish_trajectory) # makes timer, for timing actions. 15 default
-        self.test_overide_timer_ = self.create_timer(60, self.override_walk) #TEMP DELETE ME AFTER DONE
         self.get_logger().info('Joint trajectory publisher started!')                   # try number of points?
 
         self.walk_array_dict = {"Strafe Front":self.create_angle_array(0), #creates the path in multiple directions in a dictionary
@@ -86,7 +93,8 @@ class JointTrajectoryPublisher(Node): # nodes are class objects, what defines it
                                 "Strafe FrontLeft":self.create_angle_array(np.pi*0.25),
                                 "Strafe FrontRight":self.create_angle_array(np.pi*-0.25),
                                 "Strafe BackLeft":self.create_angle_array(np.pi*0.75),
-                                "Strafe BackRight":self.create_angle_array(np.pi*-0.75)}
+                                "Strafe BackRight":self.create_angle_array(np.pi*-0.75),
+                                "STOP":{1:[[0,0,0],[0,0,0]], 2:[[0,0,0],[0,0,0]],3:[[0,0,0],[0,0,0]],4:[[0,0,0],[0,0,0]]}}
         self.strafe_direction = "Strafe Front" # initial walking direction
 
     def urdf_callback(self, msg: JointTrajectory): #extracts names of joints from urdf tree.
@@ -141,23 +149,47 @@ class JointTrajectoryPublisher(Node): # nodes are class objects, what defines it
     def read_joystick(self, msg): # axes is defined in msg for joy subscriber,
         joy_mag      = np.sqrt(msg.axes[1]**2 + msg.axes[0]**2)
         if joy_mag > 0.8:
-            joy_left_ang = np.arctan2(msg.axes[0],msg.axes[1])
+            joy_left_ang = np.arctan2(msg.axes[0],msg.axes[1]) + np.pi #the pi makes it go from 0->2pi
             print(f'{joy_left_ang} mag: {joy_mag}')
         # think in 8 chunks?
-            if (joy_left_ang <= 0.785 and joy_left_ang > 0)or (joy_left_ang >= -0.785 and joy_left_ang <= 0): 
+            if joy_left_ang >= 5.75:
                 self.strafe_direction = "Strafe Back"
-                print('front')
-            elif joy_left_ang >= 2.356 or joy_left_ang <= -2.356: 
-                self.strafe_direction = "Strafe Back"
-                print('back')
-            elif joy_left_ang >= 0.785 or joy_left_ang <= -0.785: 
-                self.strafe_direction = "Strafe Back"
-                print('left')             
-            else:
+            elif joy_left_ang >= 5.2:
+                self.strafe_direction = "Strafe BackLeft"
+            elif joy_left_ang >= 4.2:
+                self.strafe_direction = "Strafe Left"
+            elif joy_left_ang >= 3.65:
+                self.strafe_direction = "Strafe FrontLeft"
+            elif joy_left_ang >= 2.6:
                 self.strafe_direction = "Strafe Front"
-                print("error")
+            elif joy_left_ang >= 2.1:
+                self.strafe_direction = "Strafe FrontRight"
+            elif joy_left_ang >= 1.1: 
+                self.strafe_direction = "Strafe Right"
+            elif joy_left_ang >= 0.5:
+                self.strafe_direction = "Strafe BackRight"
+            elif joy_left_ang >= 0.0:
+                self.strafe_direction = "Strafe Back" # could have put in else,
+            else:
+                print("a joystick direction error, somehow") # should be mathmatically impossible to get here
+            print(f'set direc to: {self.strafe_direction}')
+        else: #joystick is not pushed, robot should stop
+            self.stop_walking()
+            pass
         
+    def joint_state_callback(self, msg: JointState):
+        self.current_point = msg
     
+    def stop_walking(self):  # stop walking interupt code
+        #print("i")
+        if self.current_point != [] and self.strafe_direction != "STOP":
+            self.strafe_direction = "STOP"
+            print('\033[91m' + 'STOPPING' + '\033[0m')
+            self.publish_trajectory() # should intterupt last walking action
+            #print(len(self.current_point.position))
+
+
+
     def create_angle_array(self,ang_direction):
         [FL,FR,BL,BR] = walking_cycle(ang_direction) #create point loop with correct offset for each leg
 
@@ -181,18 +213,19 @@ class JointTrajectoryPublisher(Node): # nodes are class objects, what defines it
             point_array_FR.append(theta_FR)
             point_array_BL.append(theta_BL)
             point_array_BR.append(theta_BR)
-            
         return {1: point_array_FR, 2: point_array_FL, 3: point_array_BL, 4: point_array_BR}
 
-    def override_walk(self): # When called, changes the walking direction and restarts the walking loop
-        strafe_temp = ["Strafe FrontRight", "Strafe Right", "Strafe BackRight", "Strafe Back", "Strafe BackLeft", "Strafe Left", "Strafe FrontLeft", "Strafe Front"]
-        self.strafe_direction = strafe_temp[self.temp_strafetest] # basically just itterate overall directions to see if they work.
-        self.temp_strafetest = (self.temp_strafetest + 1) % 8     # so it repeats like a clock
-        print(f"Walk interupted, now going {self.strafe_direction}")
-        self.timer_.reset() # NOTE reset does NOT imedatly trigger the timer. Will need to handle this somehow
-        self.publish_trajectory() # call timer's target function. will be cut of when timer triggers?
+    # def override_walk(self): # When called, changes the walking direction and restarts the walking loop
+    #     strafe_temp = ["Strafe FrontRight", "Strafe Right", "Strafe BackRight", "Strafe Back", "Strafe BackLeft", "Strafe Left", "Strafe FrontLeft", "Strafe Front"]
+    #     self.strafe_direction = strafe_temp[self.temp_strafetest] # basically just itterate overall directions to see if they work.
+    #     self.temp_strafetest = (self.temp_strafetest + 1) % 8     # so it repeats like a clock
+    #     print(f"Walk interupted, now going {self.strafe_direction}")
+    #     self.timer_.reset() # NOTE reset does NOT imedatly trigger the timer. Will need to handle this somehow
+    #     self.publish_trajectory() # call timer's target function. will be cut of when timer triggers?
 
     def publish_trajectory(self):
+        if not self.chains: # stops the chain error
+            return
         self.get_logger().info('publish_trajectory') # send logger message (shows up in terminal for debugging)
                         # logger means print to consol here
         ## Create the JointTrajectory message
@@ -211,9 +244,10 @@ class JointTrajectoryPublisher(Node): # nodes are class objects, what defines it
 
         ## Append points to trajectory
         for j in range(1, 4+1):
-            point_duration = 0.0 # 3 angles, duragtion. This tells how long travel time should take. (we guess this)
+            point_duration = 0.1 # 3 angles, duragtion. This tells how long travel time should take. (we guess this)
             #msg.points = [] # resets points so messages dont contaminate each other
             first_pt = self.walk_array_dict[self.strafe_direction][j][0]
+            print(f'walking with: -{self.strafe_direction}- point array')
             for points in self.walk_array_dict[self.strafe_direction][j]: #point_array: # only runs once, part of set up. (packages each point for message sendoff)
                 point = JointTrajectoryPoint()  ## note/\ every other array index starts at 1 (why?), the j-1 is because point_4leg_array starts at 0
                 point.positions = points
