@@ -3,7 +3,7 @@
 # Version 2
 # Interface with ros2_control
 # Created: 12 Mar, 2026
-# Updated 23 Mar, 2026
+# Updated 25 Mar, 2026
 # ============================
 
 # ************************
@@ -12,6 +12,13 @@
 #
 # COMMANDS: PING, ENABLE, DISABLE, MOVE
 # args: float numbers
+#
+# LED colors:
+#   blue:   Board powered on
+#   green:  Hardware enabled
+#   red:    Show an error
+#   off:    Hardware deactivated, turn light off
+#	POWER:	white, board is powered on
 # ************************
 
 
@@ -20,8 +27,15 @@ import sys, select, time
 from servo import servo2040, Servo
 from math import pi
 
+# Import user modules
+from LED_RAINBOW_code import led_color, power_led
+
 # Create variables
 servos = []
+
+# Actions on startup
+print('Initialized')
+power_led()
 
 def handle_command(line: str) -> None:
     # Separate words and parse args
@@ -36,15 +50,25 @@ def handle_command(line: str) -> None:
 
     elif cmd == "ENABLE":
         activate_servos()
+        led_color('green')
         print("Activated")
 
     elif cmd == "DISABLE":
         deactivate_servos()
+        led_color('off')
         print("Deactivated")
         
     elif cmd == "MOVE":
         move_servos(args)
         print("Moving")
+
+    elif cmd=="ERROR":
+        led_color('red')
+        print('Error')
+
+    else:
+        print(f'CMD not recognized: {cmd}')
+
         
 
 def activate_servos():

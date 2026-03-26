@@ -1,3 +1,10 @@
+# ============================
+# servo2040 MicroPython script
+# Led control library
+# Created: 12 Mar, 2026
+# Updated 25 Mar, 2026
+# ============================
+
 import time
 from pimoroni import Button
 from plasma import WS2812
@@ -49,6 +56,21 @@ def led_rainbow():
     print('Rainbow timed out :(')
     
 def led_color(color):
-    for i in range(servo2040.NUM_LEDS):
-        hue = color
-        led_bar.set_rgb(i, 0, 0, 200)
+    hue = []
+    if color not in ['blue', 'green', 'red', 'off']:
+        print(f'Color {color} not recognized')
+        hue = [255, 255, 255]
+    elif color == 'red':
+        hue = [200, 0, 0] 
+    elif color == 'green':
+        hue = [0, 200, 0]
+    elif color == 'blue':
+        hue = [0, 0, 200]
+    elif color == 'off':
+        hue = [0, 0, 0]
+       
+    for i in range(servo2040.NUM_LEDS - 1):
+        led_bar.set_rgb(i, hue[0], hue[1], hue[2])
+        
+def power_led():
+    led_bar.set_rgb(5, 100, 100, 100)
