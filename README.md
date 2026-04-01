@@ -44,7 +44,7 @@ Capstone project: developing quadruped spider robot
 * __spider_capstone_sensors__
   - Where the sensor nodes will live (joystick, camera, IMU, etc.)
   - joy_readings
-    - Takes input from joystick controller and outputs direction as 1/8 cardinal directions (N, NW, W, SW, etc.)
+    - Takes input from joystick controller and outputs direction as 1/8 cardinal directions (North, NorthWest, West, SouthWest, South, SouthEast, East, NorthEast)
     - Publishes on topic '/joy_controller' with type std_msgs.msg.String
     - Can be extended for further joystick input needs
 
