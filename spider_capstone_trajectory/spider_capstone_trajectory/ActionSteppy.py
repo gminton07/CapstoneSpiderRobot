@@ -234,8 +234,9 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
                 #self.publish_trajectory()
                 
 
-    def joint_state_callback(self, msg: JointState):
-        self.current_point = msg
+    def joint_state_callback(self, msg: JointState): # INTERESTING gives message of all 4 leg positions with timestamp
+        self.current_point = msg # basically just a status update of allk 4 jtcs at the same time.
+        print(f'bl: {msg.name[0:3]}, {msg.position[0:3]}, {msg.time_from_start}')
 
 
     # def send_pathgoals(self):
