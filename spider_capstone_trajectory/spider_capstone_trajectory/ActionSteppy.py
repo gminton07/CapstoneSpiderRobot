@@ -251,8 +251,8 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
                 self.prevDirect = self.strafe_direction
                 print('\033[32m' + f'set direc to: {self.strafe_direction}' + '\033[0m')
                 self.try_catch_from_hell() # stop legs current goal
-                #self.publish_trajectory() # Basically "update on change" IDEA, INSTEAD OF UPDATE, TRANSITION -> UPDATE!!
-                self.transition_trajectory()
+                self.publish_trajectory(True) # Basically "update on change" IDEA, INSTEAD OF UPDATE, TRANSITION -> UPDATE!!
+                #self.transition_trajectory()
 
         else: #joystick is not pushed, robot should stop
             if self.current_point != [] and self.strafe_direction != "STOP":
@@ -288,7 +288,7 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
     #     return 
 
 
-    def publish_trajectory(self,trans_time):
+    def publish_trajectory(self,transition_first = False):
         if not self.chains: # stops the chain error
             return
         # print(self.chain_names)
@@ -296,7 +296,7 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
             print("aborted erronious walk")
             return # if in stop staste, dont try to walk.
 
-        self.get_logger().info('publish_trajectory') # send logger message (shows up in terminal for debugging)
+        #self.get_logger().info('publish_trajectory') # send logger message (shows up in terminal for debugging)
                         # logger means print to consol here
         ## Create the JointTrajectory message
         goal_FR_msg = FollowJointTrajectory.Goal()
@@ -311,10 +311,36 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
 
         ## Append points to trajectory
         print(f'walking with: -{self.strafe_direction}- point array')
+        first_points = [9999,9999,9999,9999] # creates 4 slots to be overwritten
         for j in range(1, 4+1):
-            point_duration = trans_time # how long a step takes, trans_time gives time for the transition to complete
+            point_duration = 0.0 # how long a step takes
             #msg.points = [] # resets points so messages dont contaminate each other
+
             first_pt = self.walk_array_dict[self.strafe_direction][j][0]
+            if transition_first == True:  ## NOTE important for transitions. merged here because separate function caused issues
+                first_points[j-1] = self.walk_array_dict[self.strafe_direction][j][0] # grab first point of each leg's walk path
+                # reset point (overwrites last action in jtc if one is there) (not sure if thats how jtc works with 0.0 pts?)
+                point = JointTrajectoryPoint()  ## note/\ every other array index starts at 1 (why?), the j-1 is because point_4leg_array starts at 0
+                point.positions = [self.current_point.position[10], self.current_point.position[11], self.current_point.position[9]]
+                point.time_from_start = Duration(seconds=0.1).to_msg() # logic says this should be 0, 1 works though???
+                self.goal_msgs[j].trajectory.points.append(point) 
+                
+                # raise up in the air to not drag
+                point = JointTrajectoryPoint()  ## note/\ every other array index starts at 1 (why?), the j-1 is because point_4leg_array starts at 0
+                point.positions = np.array(first_points[j-1]) + np.array([0, -0.1, 0.1]) # just raises into air slightly
+                #print(point.positions)
+                point.time_from_start = Duration(seconds=1).to_msg() #adds how much time it takes to get to point.
+                self.goal_msgs[j].trajectory.points.append(point)
+
+                # go to start point of next cycle
+                point = JointTrajectoryPoint()  ## note/\ every other array index starts at 1 (why?), the j-1 is because point_4leg_array starts at 0
+                point.positions = first_points[j-1]
+                point.time_from_start = Duration(seconds=1.5).to_msg() #adds how much time it takes to get to point.
+                self.goal_msgs[j].trajectory.points.append(point)
+                #self.goal_msgs[j].trajectory.joint_names = self.chain_names[j] # finally attach chain names
+                point_duration = 1.51 ### gives time for transition to happen 
+                ## NOTE NOTE NOTE  IF THE SAME POINT_DURATION IS USED TWICE IT FREEZES WITHOUT THROWING AN ERROR!!!!!
+            
             for points in self.walk_array_dict[self.strafe_direction][j]: #point_array: # only runs once, part of set up. (packages each point for message sendoff)
                 point = JointTrajectoryPoint()  ## note/\ every other array index starts at 1 (why?), the j-1 is because point_4leg_array starts at 0
                 point.positions = points
@@ -331,6 +357,7 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
             self.goal_msgs[j].trajectory.joint_names = self.chain_names[j] # for like angle 1 gets asssigned to joint *_sholder and such.
             #self.jtc_publishers[j].publish(msg[j]) # what sends out the message neil added i here.
             #self.get_logger().info(f'Published joint trajectory to controller {j}. Points: {len(goal_msgs[j].trajectory.points)}')
+        print('points should be sent out here')
         future_FR = self.jtc_Action_Publishers[1].send_goal_async(self.goal_msgs[1])  ## this sends goal and creates a response variable
         future_FL = self.jtc_Action_Publishers[2].send_goal_async(self.goal_msgs[2])
         future_BL = self.jtc_Action_Publishers[3].send_goal_async(self.goal_msgs[3])
@@ -345,13 +372,14 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
     def transition_trajectory(self): # basically publish_trajectory() but with custom points to transition between states
         #self.get_logger().info('publish_transition_trajectory') # send logger message (shows up in terminal for debugging)
         #print("BEGIN TRANSITION")
+        crash.now
         goal_FR_msg = FollowJointTrajectory.Goal() # creates an object of jointTrajectory Message type
         goal_FL_msg = FollowJointTrajectory.Goal() 
         goal_BL_msg = FollowJointTrajectory.Goal()
         goal_BR_msg = FollowJointTrajectory.Goal() 
         self.goal_msgs = {1: goal_FR_msg, 2: goal_FL_msg, 3: goal_BL_msg, 4: goal_BR_msg} #array became disctonary :D
  
-        first_points = [9999,9999,9999,9999] # creates 4 slots to be overwritten
+        
         for j in range(1, 4+1): # prep the end of the transition
             point_duration = 3.0 # 3 angles, duragtion. This tells how long travel time should take. (we guess this)
             #msg.points = [] # resets points so messages dont contaminate each other
@@ -443,7 +471,7 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
         if self.walk_again_counter >= 4: # if all 4 legs finished walking, walk again.
             print(f'step again! counter = {self.walk_again_counter}')
             self.walk_again_counter = 0
-            self.publish_trajectory(0)
+            self.publish_trajectory()
 
 
 
