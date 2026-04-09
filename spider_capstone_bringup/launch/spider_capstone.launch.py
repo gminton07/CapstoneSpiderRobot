@@ -147,6 +147,7 @@ def generate_launch_description():
     return LaunchDescription([
         declare_use_mock,
         declare_use_ui,
+        declare_core_group,
         core_group,
         ui_group
     ])
