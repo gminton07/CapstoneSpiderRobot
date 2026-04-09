@@ -28,7 +28,7 @@ from .Inverse_Kinematics import inverse_kinematic_FR, inverse_kinematic_FL, inve
 from .Rotations import walking_cycle
 import numpy as np
 
-class JointTrajectoryPublisher(Node): # nodes are class objects, what defines it
+class BigSteppy(Node): # nodes are class objects, what defines it
     def __init__(self): # when create class, automatically runs on class creation
         super().__init__('BigSteppy')
         self.current_point = [] # this will store the point the trajectory controller is currently sending to servo2040
@@ -324,7 +324,7 @@ def get_joint_names(chain): #kdl wrapper library (kinmatics and dynamics)
 
 def main(): # makes object and spins up node
     rclpy.init()
-    node = JointTrajectoryPublisher() # while in spin (state?) I think JointTrajectoryPublisher() acts as main loop?
+    node = BigSteppy() # while in the spin (state?) I think BigSteppy() acts as main loop?
     rclpy.spin(node) # neil note: I think the node exists here until you hit ctrl^c or otherwise terminate node.
     node.destroy_node()
     rclpy.shutdown()
