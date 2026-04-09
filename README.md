@@ -41,6 +41,13 @@ Capstone project: developing quadruped spider robot
   - joint_trajectory
     - This node sends a JointTrajectory message to joint_trajectory_controller_1 (front_right leg). I am trying to use kdl_py_bridge to extract the names of mobile joints for each leg (instead of hard-coding).
 
+* __spider_capstone_sensors__
+  - Where the sensor nodes will live (joystick, camera, IMU, etc.)
+  - joy_readings
+    - Takes input from joystick controller and outputs direction as 1/8 cardinal directions (North, NorthWest, West, SouthWest, South, SouthEast, East, NorthEast)
+    - Publishes on topic '/joy_controller' with type std_msgs.msg.String
+    - Can be extended for further joystick input needs
+
 * __spider_capstone_visualize__
   - Workspace envelope visualization for RViz
   - Use with spider_capstone_description:view_spider.launch.py

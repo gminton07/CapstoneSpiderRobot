@@ -15,8 +15,8 @@
 	</node>
 
 	<!-- Spawn Joy for controller input-->
-	<node pkg="joy" exec="joy_node">
-	</node>
+	<node pkg="joy" exec="joy_node"/>
+	<node pkg="spider_capstone_sensors" exec="joy_controller"/>
 
 	<!--  Start controller manager  -->
 	<node pkg="controller_manager" exec="ros2_control_node">
