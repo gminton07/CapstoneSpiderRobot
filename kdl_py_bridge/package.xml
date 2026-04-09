@@ -9,8 +9,9 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <depend>rclcpp</depend>
   <depend>kdl_parser</depend>
-  <depend>orocos_kdl</depend>
+  <depend>orocos_kdl_vendor</depend>
   <depend>pybind11_vendor</depend>
 
   <build_depend>python3-dev</build_depend>
