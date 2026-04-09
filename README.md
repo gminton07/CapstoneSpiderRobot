@@ -8,14 +8,23 @@ Capstone project: developing quadruped spider robot
   - Makes sure that all project packages are installed
 
 * __spider_capstone_bringup__
-  - spider_capstone_controllers.yaml
-    - Configures the controller_manager and its controllers with ros__parameters
-    - update_rate: How fast the controllers will try to run (Hz)
-    - joints: Names for the joints each JointTrajectoryController can use
-    - control_interfaces: Input parameter types
-    - state_interfaces: Output parameter types
-  - spider_capstone_launch.xml
-    - XML launch file for starting controllers and RViz
+  * config
+    - spider_capstone_controllers.yaml
+      - Configures the controller_manager and its controllers with ros__parameters
+      - update_rate: How fast the controllers will try to run (Hz)
+      - joints: Names for the joints each JointTrajectoryController can use
+      - control_interfaces: Input parameter types
+      - state_interfaces: Output parameter types
+  * launch
+    - spider_capstone.launch.py
+      - Python launch file for the project
+      - CLI arguments
+        * use_mock_hardware -- (bool, Default: false) Whether to run real or mock hardware
+        * use_ui -- (bool, Default: false) Whether to launch GUI nodes. Not for use of headless pi
+        * core_group -- (bool, Default: true) Whether to launch core node group. Turn off for use on external (non-robot) computer
+
+    - spider_capstone_launch.xml (DEPRECATED)
+      - XML launch file for starting controllers and RViz
 
 * __spider_capstone_description__
   - URDF robot descriptions with STL meshes
