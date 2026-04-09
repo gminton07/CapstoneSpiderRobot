@@ -1,0 +1,8 @@
+# 4/5/26 Notes #
+To perform line detection I need to implement the Canny edge detection
+algorithm and then find the lines, the Canny edge detection will want
+a min a max gradient value to determine what is a line and what isn't a line
+
+We can use ESE205 gradient changing code to see what the lines would
+be given the min and max values of the gradient change
+
