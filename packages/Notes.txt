@@ -1,0 +1,16 @@
+# Command to export packages list uses the debian based manager system #
+
+
+############# Export side ###########
+update to a new file before sending list file out
+
+Command: dpkg --get-selections > [filename.lst]
+
+
+######## To import #############
+sudo apt-get update
+sudo dpkg --set-selection < [filename.lst]
+
+# install if not already dselect (might be optional )#
+sudo apt install dselect
+sudp apt-get dselect-upgrade
