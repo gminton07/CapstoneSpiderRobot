@@ -25,6 +25,7 @@ setup(
     entry_points={
         'console_scripts': [
             f'joy_controller = {package_name}.joy_controller:main',
+            f'PowerLogger = {package_name}.PowerLogger:main',
         ],
     },
 )
