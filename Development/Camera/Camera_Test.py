@@ -9,8 +9,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--debug',help='helps to debug by saving images to SD rather than ram and provides debug statements',action='store_true')
 parser.add_argument('--resolution',help='adjust the resolution of the camera for speed and memory sake', type = int, nargs='+', default = [1640,1232])
 parser.add_argument('--sleep', help='time delay after taking image', type = float, default = .1)
-parser.add_argument('--Gradient', help = 'Alter the gradient min and max for Canny detection', type = int, nargs='+', default = [50,85] )
-parser.add_argument('--ApertureSize', help='Adjust the Canny algorithm to find filter the magnitude of the gradient for line detection. Gradients are computed using the convolution of a pixel, possible alternative is the scharr function, they are both discrete derivative aproximations', type = int, default=5)
+parser.add_argument('--Gradient', help = 'Alter the gradient min and max for Canny detection', type = int, nargs='+', default = [50,80] )
+parser.add_argument('--ApertureSize', help='Adjust the Canny algorithm to find filter the magnitude of the gradient for line detection. Gradients are computed using the convolution of a pixel, possible alternative is the scharr function, they are both discrete derivative aproximations', type = int, default=3)
 parser.add_argument('--take_img', help='choosing whether to take a picture or import image', action='store_true')
 args = parser.parse_args()
 
@@ -47,19 +47,19 @@ if args.debug:
 canny_img = cv2.Canny(blur_gray_img, args.Gradient[0], args.Gradient[1],apertureSize=args.ApertureSize)
 
 # Apply the lines detection #
-lines = cv2.HoughLinesP(blur_gray_img, 1, np.pi/180, threshold = 100, minLineLength=20, maxLineGap=10)
+lines = cv2.HoughLinesP(canny_img, 1, np.pi/180, threshold = 100, minLineLength=20, maxLineGap=10)
 
 with open('lines.txt','w') as file:
     file.write(f'str{lines}\n')
 
 # make the black image #
-black_img = np.zeros( (args.resolution[0],args.resolution[1]),dtype='uint8')
+black_img = np.zeros( (args.resolution[1],args.resolution[0]),dtype='uint8')
 
 
 if lines is not None:
     for line in lines:
-        x1,y1,x2,y2 = line[0,:]
-        cv2.line(black_img, (x1,y1),(x2,y2),5)
+        x1,y1,x2,y2 = line[0]
+        cv2.line(black_img, (x1,y1),(x2,y2),255,1)
 
 # Display img #
 cv2.imshow('lines detected', black_img)
