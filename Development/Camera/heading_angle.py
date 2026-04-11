@@ -21,36 +21,69 @@ x2 = data[2]
 y2 = data[3]
 
 # Create the point locations and find the vector #
-P1 = np.append(x1,y1)
-P2 = np.append(x2,y2)
+P1 = np.column_stack((x1,y1))
+P2 = np.column_stack((x2,y2))
 vector =P2 - P1
 
 # Apply an average filter to remove excessive lines #
 
-# Magnitude filter (Use the median) #
-median_num = np.median(np.abs(vector))
+magnitude = np.linalg.norm(vector,axis=1)
 
-for i in vector:
-    if np.abs(vector[i]) > median_num + args.offset:
-        med_vector[i] = 1
-    else:
-        med_vector[i] = 0
+# Magnitude filter (Use the median) #
+median_num = np.median(magnitude)
+
+# initialize the median filter vector #
+med_vector = magnitude > (median_num + args.offset).astype(int)
 
 # find the indices where the vector is zero and remove those lines #
-indices = np.where(med_vector==0)[0]
-new_P1 = (indices.T)@P1
-new_P2 = (indices.T)@P2
+new_P1 = P1[med_vector]
+new_P2 = P2[med_vector]
 
-new_lines = np.append(new_P1, new_P2)
+# Apply a distance filter between vectors #
+
+########## order of the filter ###############
+# find the angle of the vector
+        # this is a filter in itself to filter lines with the same angle
+new_vector = new_P2 - new_P1
+theta = np.arctan2(new_vector[:,1],new_vector[:,0])
+
+# create the offset #
+angle_offset = 5* np.pi / 180
+
+# initialize the mask angle vectors#
+angle_mask = np.zeros([len(theta),len(theta)])
+
+for i in range(len(theta)):
+    # initialize the mask vector #
+    mask = np.zeros_like(theta)
+    for j in range(len(theta)):
+        mask[i] = (angle_offset < (np.abs(theta[j] - theta[i])*theta[i])).astype(int)
+    angle_mask[i,:] = mask.T
+
+# Now we can check for the row vectors that would be the same and eliminate those #
+for i in range(len(angle_mask)):
+    
+
+
+
+# find the line equation and solve for the distance
+        # this is a filter that will check if we want to remove the line given the distance
+# remove the line with the lesser magnitude
+
+#new_vector = new_P2 - new_P1
+#new_magnitude = np.linalg.norm(new_vector,axis=1)
+
+
+new_lines = np.column_stack((new_P1, new_P2))
 
 # With args debug we can have a plot to check if we have a good filter model #
 if args.debug:
-    black_img = np.zeros( (args.resolution[1], args.resolution[0],dtype='uint8')
-        for line in new_lines:
-            x1,y1,x2,y2 = line[0]
-            cv2.line(black_img,(x1,y1),(x2,y2),255,1)
+    black_img = np.zeros( (args.resolution[1], args.resolution[0]),dtype='uint8')
+    for line in new_lines:
+        x1,y1,x2,y2 = line
+        cv2.line(black_img,(int(x1),int(y1)),(int(x2),int(y2)),255,1)
 
-    cv2.imwshow('lines detected',black_img)
+    cv2.imshow('lines detected',black_img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
