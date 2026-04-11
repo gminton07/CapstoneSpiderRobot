@@ -49,18 +49,19 @@ canny_img = cv2.Canny(blur_gray_img, args.Gradient[0], args.Gradient[1],aperture
 # Apply the lines detection #
 lines = cv2.HoughLinesP(canny_img, 1, np.pi/180, threshold = 100, minLineLength=20, maxLineGap=10)
 
-with open('lines.txt','w') as file:
-    file.write(f'str{lines}\n')
-
 # make the black image #
 black_img = np.zeros( (args.resolution[1],args.resolution[0]),dtype='uint8')
 
 
 if lines is not None:
-    for line in lines:
-        x1,y1,x2,y2 = line[0]
-        cv2.line(black_img, (x1,y1),(x2,y2),255,1)
+    with open('lines.txt','w') as file:
+        for line in lines:
+            x1,y1,x2,y2 = line[0]
+            cv2.line(black_img, (x1,y1),(x2,y2),255,1)
+            file.write(f'{x1}, {y1}, {x2}, {y2}\n')
 
 # Display img #
 cv2.imshow('lines detected', black_img)
+cv2.imwrite('line_img.jpeg',black_img)
 cv2.waitKey(0)
+cv2.destroyAllWindows()
