@@ -43,7 +43,7 @@ new_P2 = P2[med_vector]
 
 ########## order of the filter ###############
 # find the angle of the vector
-        # this is a filter in itself to filter lines with the same angle
+# this is a filter in itself to filter lines with the same angle
 new_vector = new_P2 - new_P1
 theta = np.arctan2(new_vector[:,1],new_vector[:,0])
 
@@ -53,18 +53,55 @@ angle_offset = 5* np.pi / 180
 # initialize the mask angle vectors#
 angle_mask = np.zeros([len(theta),len(theta)])
 
-for i in range(len(theta)):
-    # initialize the mask vector #
-    mask = np.zeros_like(theta)
-    for j in range(len(theta)):
-        mask[i] = (angle_offset < (np.abs(theta[j] - theta[i])*theta[i])).astype(int)
-    angle_mask[i,:] = mask.T
+# filter through the angles #
+diff = np.abs(theta[:,None] - theta[None,:])
+diff = np.minimum(diff, np.pi-diff)
+angle_mask = (diff < angle_offset).astype(int)
 
 # Now we can check for the row vectors that would be the same and eliminate those #
-for i in range(len(angle_mask)):
-    
+new_magnitude = np.linalg.norm(new_vector,axis=1)
+unit_vector = new_vector/new_magnitude[:,None]
+
+# distance in pixels from one another #
+distance_filter = 10
+
+# create the filter matrix #
+distance_mask = np.zeros((len(theta),len(theta)))
+
+# run through each line to find the distance and apply threshold #
+for i in range(len(theta)):
+
+    diff_point = new_P1 - new_P1[i]
+
+    cross = np.abs( np.cross(diff_point,unit_vector[i]) )
+
+    distance_mask[i,:] = (cross < distance_filter).astype(int)
+
+# Combine the anglular and distance filter #
+Mask = angle_mask*distance_mask
+np.fill_diagonal(Mask,0)
+
+# initialize the keep matrix that defines which lines are to be kept #
+keep = np.ones(len(theta), dtype = bool)
+magnitudes = np.linalg.norm(new_vector, axis=1)
 
 
+# Create the keep matrix and remove redundant relationships #
+# keeps matrix based on magnitude #
+for i in range(len(theta)):
+    if not keep[i]:
+        continue
+    duplicates = np.where(Mask[i] == 1)[0]
+    for j in duplicates:
+        if magnitudes[j]<= magnitudes[i]:
+            keep[j] = False
+        else:
+            keep[i] = False
+            break
+
+# filtered output of the image processing #
+filtered_p1 = new_P1[keep]
+filtered_p2 = new_P1[keep]
 
 # find the line equation and solve for the distance
         # this is a filter that will check if we want to remove the line given the distance
@@ -73,8 +110,10 @@ for i in range(len(angle_mask)):
 #new_vector = new_P2 - new_P1
 #new_magnitude = np.linalg.norm(new_vector,axis=1)
 
+#### Place in the new line points ####
+new_lines = np.column_stack( (filtered_p1, filtered_p2) )
 
-new_lines = np.column_stack((new_P1, new_P2))
+# new_lines = np.column_stack((new_p1, new_p2))
 
 # With args debug we can have a plot to check if we have a good filter model #
 if args.debug:
