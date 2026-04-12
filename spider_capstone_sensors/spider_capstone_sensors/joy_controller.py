@@ -2,9 +2,11 @@
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String
 from sensor_msgs.msg import Joy
 
+from spider_capstone_msgs.msg import Control
+
+from enum import Enum
 import numpy as np
 
 class JoyController(Node):
@@ -21,7 +23,7 @@ class JoyController(Node):
 
         # Publisher
         self.publisher_ = self.create_publisher(
-                String,
+                Control,
                 '/joy_controller',
                 10
         )
@@ -32,39 +34,42 @@ class JoyController(Node):
         axes = msg.axes
 
         # Create new message
-        msg = String()
+        out_msg = Control()
 
         mag = np.sqrt(axes[0]**2 + axes[1]**2)
         if mag >= 0.7:
             left_stick_ang = np.arctan2(axes[0], axes[1])
 
             if np.abs(left_stick_ang) <= np.pi/8:
-                msg.data = "North"
+                out.msg.direction = Control.NORTH
             elif np.abs(left_stick_ang) >= np.pi*7/8:
-                msg.data = "South"
+                out.msg.direction = Control.SOUTH
             elif left_stick_ang > 0:
                 if left_stick_ang <= np.pi*3/8:
-                    msg.data = "NorthWest"
+                    out.msg.direction = Control.NORTHWEST
                 elif left_stick_ang <= np.pi*5/8:
-                    msg.data = "West"
+                    out.msg.direction = Control.WEST
                 elif left_stick_ang <= np.pi*7/8:
-                    msg.data = "SouthWest"
+                    out.msg.direction = Control.SOUTHWEST
                 else:
-                    msg.data = "JOYSTICK ERROR 0"
+                    out.msg.direction = Control.ERROR1
             else:
                 left_stick_ang = np.abs(left_stick_ang)
                 if left_stick_ang <= np.pi*3/8:
-                    msg.data = "NorthEast"
+                    out.msg.direction = Control.NORTHEAST
                 elif left_stick_ang <= np.pi*5/8:
-                    msg.data = "East"
+                    out.msg.direction = Control.EAST
                 elif left_stick_ang <= np.pi*7/8:
-                    msg.data = "SouthEast"
+                    out.msg.direction = Control.SOUTHEAST
                 else:
-                    msg.data = "JOYSTICK ERROR 1"
+                    out.msg.direction = Control.ERROR2
 
-            self.get_logger().info(f'ang = {left_stick_ang:.4f}, dir = {msg.data}')
+                out_msg.stop = true
 
-            self.publisher_.publish(msg)
+            self.get_logger().info(f'ang = {left_stick_ang:.4f}, dir = {out_msg.direction}, stop = {out_msg.stop}')
+
+
+            self.publisher_.publish(out.msg)
 
 
 
@@ -74,7 +79,6 @@ def main():
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
-
 
 if __name__ == '__main__':
     main()
