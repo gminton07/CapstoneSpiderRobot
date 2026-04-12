@@ -61,7 +61,7 @@ class PowerLogger(Node): # nodes are class objects, what defines it
         ## timer to collect data samples
         self.timer_ = self.create_timer(5, self.log_battery) # makes timer, for timing actions. 15 default
         self.data_pts = 0
-        self.max_pts = 1000
+        self.max_pts = 2000
         self.failure_counter = 0 # for automatic pi shutoff. Lets probably leave this off for now
     
     ## Functions for battery data collection:
