@@ -101,7 +101,7 @@ for i in range(len(theta)):
 
 # filtered output of the image processing #
 filtered_p1 = new_P1[keep]
-filtered_p2 = new_P1[keep]
+filtered_p2 = new_P2[keep]
 
 # find the line equation and solve for the distance
         # this is a filter that will check if we want to remove the line given the distance
