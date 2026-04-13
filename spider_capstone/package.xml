@@ -12,6 +12,7 @@
   <exec_depend>spider_capstone_bringup</exec_depend>
   <exec_depend>spider_capstone_description</exec_depend>
   <exec_depend>spider_capstone_hardware</exec_depend>
+  <depend>spider_capstone_msgs</depend>
   <exec_depend>spider_capstone_sensors</exec_depend>
   <exec_depend>spider_capstone_trajectory</exec_depend>
   <exec_depend>spider_capstone_visualize</exec_depend>

@@ -8,14 +8,24 @@ Capstone project: developing quadruped spider robot
   - Makes sure that all project packages are installed
 
 * __spider_capstone_bringup__
-  - spider_capstone_controllers.yaml
-    - Configures the controller_manager and its controllers with ros__parameters
-    - update_rate: How fast the controllers will try to run (Hz)
-    - joints: Names for the joints each JointTrajectoryController can use
-    - control_interfaces: Input parameter types
-    - state_interfaces: Output parameter types
-  - spider_capstone_launch.xml
-    - XML launch file for starting controllers and RViz
+  * config
+    - spider_capstone_controllers.yaml
+      - Configures the controller_manager and its controllers with ros__parameters
+      - update_rate: How fast the controllers will try to run (Hz)
+      - joints: Names for the joints each JointTrajectoryController can use
+      - control_interfaces: Input parameter types
+      - state_interfaces: Output parameter types
+  * launch
+    - spider_capstone.launch.py
+      - Python launch file for the project
+      - CLI arguments
+        * use_mock_hardware -- (bool, Default: false) Whether to run real or mock hardware
+        * use_gui -- (bool, Default: false) Whether to launch GUI nodes. Not for use of headless pi
+        * core_group -- (bool, Default: true) Whether to launch core node group. Turn off for use on external (non-robot) computer
+        * use_sensors -- (bool, Default: true) Whether to launch sensor group (true) or joy group (false)
+
+    - spider_capstone_launch.xml (DEPRECATED)
+      - XML launch file for starting controllers and RViz
 
 * __spider_capstone_description__
   - URDF robot descriptions with STL meshes
@@ -31,6 +41,14 @@ Capstone project: developing quadruped spider robot
   - The hardware interface to work with our Servo2040 servo control board
   - Plugin: spider_capstone_hardware/SpiderCapstoneInterface
   - Loaded as the hardware_interface in spider.ros2_control.xacro of spider_capstone_description (this is the default URDF now)
+
+* __spider_capstone_msgs__
+  - Special message types for inter-node communication
+  - Control
+    - Sends general control data for the ActionSteppy leg gait controller.
+    - direction, stop
+  - Imu9Dof
+    - Sends linear acceleration, angular velocity, and magnetic from our 9 DoF imu.
 
 * __spider_capstone_trajectory__
   - Calculate and publish trajectory messages to the controller stack
