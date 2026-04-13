@@ -29,7 +29,7 @@ def Camera(resolution=(1640, 1230), debug = False, debug_img = False, ApertureSi
     gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     
     # Blur out the image interpolating a 5x5 area surrounding pixel #
-    blur_gray_img = cv2.blur(gray_img,(5,5))
+    blur_gray_img = cv2.blur(gray_img,(3,3)) # Altering might help with line detect? #
     
     if debug_img:
         cv2.imwrite('test_gray_img.png',blur_gray_img)
@@ -40,11 +40,20 @@ def Camera(resolution=(1640, 1230), debug = False, debug_img = False, ApertureSi
     
     # Apply the lines detection #
     lines = cv2.HoughLinesP(canny_img, 1, np.pi/180, threshold = 100, minLineLength=20, maxLineGap=10)
-    
+
     # Extrapolate the lines #    
     if lines is not None:
         data=lines.reshape(-1,4)
-
+        if debug_img:
+            # Create a black image to plot lines detected #
+            black_img = np.zeros( (resolution[1], resolution[0]), dtype = 'uint8' )
+            for line in lines:
+                x1,y1,x2,y2 = line[0]
+                cv2.line(black_img, (x1,y1), (x2,y2), 255,1)
+            cv2.imshow('before magnitude and angular filter', black_img)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
+    # Call in additional Image processing #
     img_process(data, debug = debug)
     
     

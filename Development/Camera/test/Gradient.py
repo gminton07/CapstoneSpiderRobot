@@ -1,9 +1,18 @@
 import cv2
 import numpy as np
+import argparse
+from Take_Image import Capture_Image
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--Take_img', help = 'decide whether you take an image or use an input file', action='store_true')
+args = parser.parse_args()
 
 # Import the desired file for the gradient analysis #
-filename = input('Enter File Here: ')
-orig_img = cv2.imread(filename)
+if args.Take_img:
+    orig_img = Capture_Image()
+else:
+    filename = input('Enter Image file: ')
+    orig_img = cv2.imread(filename)
 
 # determine the image size #
 y_height = 1640
