@@ -1,4 +1,4 @@
-# Read joystick information and output direction for BigSteppy
+# Read joystick information and out_ut direction for BigSteppy
 
 import rclpy
 from rclpy.node import Node
@@ -24,7 +24,7 @@ class JoyController(Node):
         # Publisher
         self.publisher_ = self.create_publisher(
                 Control,
-                '/joy_controller',
+                '/spider_control',
                 10
         )
 
@@ -32,44 +32,55 @@ class JoyController(Node):
     def joy_callback(self, msg):
         # Get axes from the Joy msg and calculate which octant the angle rests in
         axes = msg.axes
+        buttons = msg.buttons
 
         # Create new message
         out_msg = Control()
 
         mag = np.sqrt(axes[0]**2 + axes[1]**2)
+        left_stick_ang = 0
         if mag >= 0.7:
             left_stick_ang = np.arctan2(axes[0], axes[1])
 
             if np.abs(left_stick_ang) <= np.pi/8:
-                out.msg.direction = Control.NORTH
+                out_msg.direction = Control.NORTH
             elif np.abs(left_stick_ang) >= np.pi*7/8:
-                out.msg.direction = Control.SOUTH
+                out_msg.direction = Control.SOUTH
             elif left_stick_ang > 0:
                 if left_stick_ang <= np.pi*3/8:
-                    out.msg.direction = Control.NORTHWEST
+                    out_msg.direction = Control.NORTHWEST
                 elif left_stick_ang <= np.pi*5/8:
-                    out.msg.direction = Control.WEST
+                    out_msg.direction = Control.WEST
                 elif left_stick_ang <= np.pi*7/8:
-                    out.msg.direction = Control.SOUTHWEST
+                    out_msg.direction = Control.SOUTHWEST
                 else:
-                    out.msg.direction = Control.ERROR1
+                    out_msg.direction = Control.ERROR1
             else:
                 left_stick_ang = np.abs(left_stick_ang)
                 if left_stick_ang <= np.pi*3/8:
-                    out.msg.direction = Control.NORTHEAST
+                    out_msg.direction = Control.NORTHEAST
                 elif left_stick_ang <= np.pi*5/8:
-                    out.msg.direction = Control.EAST
+                    out_msg.direction = Control.EAST
                 elif left_stick_ang <= np.pi*7/8:
-                    out.msg.direction = Control.SOUTHEAST
+                    out_msg.direction = Control.SOUTHEAST
                 else:
-                    out.msg.direction = Control.ERROR2
+                    out_msg.direction = Control.ERROR2
 
-                out_msg.stop = true
+        # Check for rotation commands
+        if axes[4] == -1.0:
+            out_msg.direction = Control.ROTCCW
+        elif axes[5] == -1.0:
+            out_msg.direction = Control.ROTCW
 
-            self.get_logger().info(f'ang = {left_stick_ang:.4f}, dir = {out_msg.direction}, stop = {out_msg.stop}')
+        # Check the stop button
+        if buttons[0]:
+            out_msg.stop = True
+        else:
+            out_msg.stop = False
 
-
-            self.publisher_.publish(out.msg)
+        # Publish the message
+        self.get_logger().info(f'ang = {left_stick_ang:.4f}, dir = {out_msg.direction}, stop = {out_msg.stop}')
+        self.publisher_.publish(out_msg)
 
 
 

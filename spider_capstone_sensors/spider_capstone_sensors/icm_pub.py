@@ -8,9 +8,9 @@ from rclpy.node import Node
 
 from spider_capstone_msgs.msg import Imu9Dof
 
-class IcmPub(Node):
+class IcmNode(Node):
     def __init__(self):
-        super().__init__(icm_pub)
+        super().__init__('icm_node')
 
         # Create publisher & timer
         self.icm_pub = self.create_publisher(
@@ -55,7 +55,7 @@ class IcmPub(Node):
     
 def main():
     rclpy.init()
-    node = IcmPub()
+    node = IcmNode()
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
