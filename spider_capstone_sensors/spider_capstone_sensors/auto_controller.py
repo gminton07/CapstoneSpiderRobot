@@ -1,9 +1,9 @@
 import rclpy
 from rclpy.node import Node
 
-from spider_capstone_msgs import Control, Imu9Dof
+from spider_capstone_msgs.msg import Control, Imu9Dof
 
-from Enum import IntEnum
+from enum import IntEnum
 
 
 # Direction enumerator from Control message
@@ -39,13 +39,14 @@ class AutoControl(Node):
         '''
         
         # Create publisher
-        self.control_pub = self.create_subscription(
+        self.control_pub = self.create_publisher(
             Control,
             '/spider_control',
             10
         )
 
         # Create timer
+        TIMER_PERIOD = 0.5
         self.timer_ = self.create_timer(
             TIMER_PERIOD,
             self.timer_cb

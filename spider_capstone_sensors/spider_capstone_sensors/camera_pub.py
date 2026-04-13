@@ -1,11 +1,12 @@
 import rclpy
 from rclpy.node import Node
+from std_msgs.msg import String ## Placeholder
 
 import cv2
 
 class CameraNode(Node):
     def __init__(self):
-        super.__init__('camera_node')
+        super().__init__('camera_node')
         
         self.cam_pub = self.create_publisher(
                String,
@@ -13,12 +14,13 @@ class CameraNode(Node):
                10
         )
 
+        DURATION = 0.5
         self.timer = self.create_timer(
                 DURATION,
                 self.timer_callback
         )
 
-        self.cap = cv2.Videocapture('/dev/video0', cv2.CAP_V4L)
+        self.cap = cv2.VideoCapture('/dev/video0', cv2.CAP_V4L)
         # TODO: Set height and width for self.cap
 
     def timer_callback(self):

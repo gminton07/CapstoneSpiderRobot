@@ -14,7 +14,8 @@ def generate_launch_description():
     use_mock_hardware = LaunchConfiguration('use_mock_hardware')
     use_gui = LaunchConfiguration('use_gui')  # controls gui group
     core_group = LaunchConfiguration('core_group') # controls Core group
-    use_sensors = LaunchConfiguration('use_sensors') # Controls sensor/joy groups
+    use_sensors = LaunchConfiguration('use_sensors') # Controls sensor group
+    use_joy = LaunchConfiguration('use_joy')
 
     declare_use_mock = DeclareLaunchArgument(
         'use_mock_hardware',
@@ -31,11 +32,16 @@ def generate_launch_description():
         default_value='true'
     )
 
-    declare_sensor_group = DeclareLaunchArgument(
+    declare_use_sensors = DeclareLaunchArgument(
         # If true: use sensors, auto_controller
         # If false: use joy, joy_controller
         'use_sensors',
         default_value='true'
+    )
+
+    declare_use_joy = DeclareLaunchArgument(
+        'use_joy',
+        default_value='false'
     )
 
     # -----------------------------
@@ -77,11 +83,6 @@ def generate_launch_description():
                         use_mock_hardware
                     ])
                 }]
-            ),
-
-            Node(
-                package='spider_capstone_sensors',
-                executable='joy_controller'
             ),
 
             Node(
@@ -169,12 +170,13 @@ def generate_launch_description():
     # Joy Group (conditional)
     # -----------------------------
     joy_group = GroupAction(
-        condition = UnlessCondition(use_sensors),
+        condition = IfCondition(use_joy),
         actions=[
             Node(
                 package='joy',
                 executable='joy_node'
             ),
+
             Node(
                 package='spider_capstone_sensors',
                 executable='joy_controller'
@@ -189,7 +191,8 @@ def generate_launch_description():
         declare_use_mock,
         declare_use_gui,
         declare_core_group,
-        declare_sensor_group,
+        declare_use_sensors,
+        declare_use_joy,
         core_group,
         gui_group,
         sensor_group,

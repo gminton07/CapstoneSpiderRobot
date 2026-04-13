@@ -19,6 +19,7 @@ class IcmNode(Node):
                 10
         )
 
+        DURATION = 0.5
         self.timer_ = self.create_timer(
                 DURATION,
                 self.timer_callback
@@ -26,7 +27,7 @@ class IcmNode(Node):
 
         # Setup I2C
         self.i2c = board.I2C()
-        self.icm = adafruit_icm20x.ICM20948(i2c)
+        self.icm = adafruit_icm20x.ICM20948(self.i2c)
 
     def timer_callback(self):
         msg = Imu9Dof()
