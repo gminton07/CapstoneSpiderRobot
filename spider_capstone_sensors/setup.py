@@ -28,6 +28,7 @@ setup(
             f'camera_node = {package_name}.camera_pub:main',
             f'icm_node = {package_name}.icm_pub:main',
             f'auto_controller = {package_name}.auto_controller:main',
+            f'PowerLogger = {package_name}.PowerLogger:main',
         ],
     },
 )
