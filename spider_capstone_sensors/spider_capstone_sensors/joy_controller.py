@@ -56,15 +56,18 @@ class JoyController(Node):
                 else:
                     out_msg.direction = Control.ERROR1
             else:
-                left_stick_ang = np.abs(left_stick_ang)
-                if left_stick_ang <= np.pi*3/8:
+                abs_left_stick_ang = np.abs(left_stick_ang)
+                if abs_left_stick_ang <= np.pi*3/8:
                     out_msg.direction = Control.NORTHEAST
-                elif left_stick_ang <= np.pi*5/8:
+                elif abs_left_stick_ang <= np.pi*5/8:
                     out_msg.direction = Control.EAST
-                elif left_stick_ang <= np.pi*7/8:
+                elif abs_left_stick_ang <= np.pi*7/8:
                     out_msg.direction = Control.SOUTHEAST
                 else:
                     out_msg.direction = Control.ERROR2
+        else:
+            out_msg.direction = Control.IDLE
+
 
         # Check for rotation commands
         if axes[4] == -1.0:
@@ -79,7 +82,7 @@ class JoyController(Node):
             out_msg.stop = False
 
         # Publish the message
-        self.get_logger().info(f'ang = {left_stick_ang:.4f}, dir = {out_msg.direction}, stop = {out_msg.stop}')
+        self.get_logger().debug(f'ang = {left_stick_ang:.4f}, dir = {out_msg.direction}, stop = {out_msg.stop}')
         self.publisher_.publish(out_msg)
 
 
