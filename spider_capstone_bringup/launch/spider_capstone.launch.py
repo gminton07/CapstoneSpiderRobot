@@ -1,6 +1,6 @@
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, GroupAction
-from launch.conditions import IfCondition
+from launch.conditions import IfCondition, UnlessCondition
 from launch.substitutions import LaunchConfiguration, Command, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
@@ -12,21 +12,29 @@ def generate_launch_description():
     # Launch arguments
     # -----------------------------
     use_mock_hardware = LaunchConfiguration('use_mock_hardware')
-    use_ui = LaunchConfiguration('use_ui')  # controls UI group
+    use_gui = LaunchConfiguration('use_gui')  # controls gui group
     core_group = LaunchConfiguration('core_group') # controls Core group
+    use_sensors = LaunchConfiguration('use_sensors') # Controls sensor/joy groups
 
     declare_use_mock = DeclareLaunchArgument(
         'use_mock_hardware',
         default_value='false'
     )
 
-    declare_use_ui = DeclareLaunchArgument(
-        'use_ui',
+    declare_use_gui = DeclareLaunchArgument(
+        'use_gui',
         default_value='false'
     )
 
     declare_core_group = DeclareLaunchArgument(
         'core_group',
+        default_value='true'
+    )
+
+    declare_sensor_group = DeclareLaunchArgument(
+        # If true: use sensors, auto_controller
+        # If false: use joy, joy_controller
+        'use_sensors',
         default_value='true'
     )
 
@@ -52,7 +60,7 @@ def generate_launch_description():
     ])
 
     # -----------------------------
-    # Core Group (always or conditional separately if desired)
+    # Core Group (conditional)
     # -----------------------------
     core_group = GroupAction(
         condition=IfCondition(core_group),
@@ -116,16 +124,11 @@ def generate_launch_description():
     )
 
     # -----------------------------
-    # UI Group (conditional)
+    # gui Group (conditional)
     # -----------------------------
-    ui_group = GroupAction(
-        condition=IfCondition(use_ui),
+    gui_group = GroupAction(
+        condition=IfCondition(use_gui),
         actions=[
-
-            Node(
-                package='joy',
-                executable='joy_node'
-            ),
 
             Node(
                 package='rviz2',
@@ -142,12 +145,53 @@ def generate_launch_description():
     )
 
     # -----------------------------
+    # Sensor Group (conditional)
+    # -----------------------------
+    sensor_group = GroupAction(
+        condition = IfCondition(use_sensors),
+        actions=[
+            Node(
+                package='spider_capstone_sensors',
+                executable='camera_node'
+            ),
+            Node(
+                package='spider_capstone_sensors',
+                executable='icm_node'
+            ),
+            Node(
+                package='spider_capstone_sensors',
+                executable='auto_controller'
+            ),
+        ]
+    )
+
+    # -----------------------------
+    # Joy Group (conditional)
+    # -----------------------------
+    joy_group = GroupAction(
+        condition = UnlessCondition(use_sensors),
+        actions=[
+            Node(
+                package='joy',
+                executable='joy_node'
+            ),
+            Node(
+                package='spider_capstone_sensors',
+                executable='joy_controller'
+            ),
+        ]
+    )    
+
+    # -----------------------------
     # Launch Description
     # -----------------------------
     return LaunchDescription([
         declare_use_mock,
-        declare_use_ui,
+        declare_use_gui,
         declare_core_group,
+        declare_sensor_group,
         core_group,
-        ui_group
+        gui_group,
+        sensor_group,
+        joy_group,
     ])

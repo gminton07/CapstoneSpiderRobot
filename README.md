@@ -20,8 +20,9 @@ Capstone project: developing quadruped spider robot
       - Python launch file for the project
       - CLI arguments
         * use_mock_hardware -- (bool, Default: false) Whether to run real or mock hardware
-        * use_ui -- (bool, Default: false) Whether to launch GUI nodes. Not for use of headless pi
+        * use_gui -- (bool, Default: false) Whether to launch GUI nodes. Not for use of headless pi
         * core_group -- (bool, Default: true) Whether to launch core node group. Turn off for use on external (non-robot) computer
+        * use_sensors -- (bool, Default: true) Whether to launch sensor group (true) or joy group (false)
 
     - spider_capstone_launch.xml (DEPRECATED)
       - XML launch file for starting controllers and RViz
@@ -40,6 +41,14 @@ Capstone project: developing quadruped spider robot
   - The hardware interface to work with our Servo2040 servo control board
   - Plugin: spider_capstone_hardware/SpiderCapstoneInterface
   - Loaded as the hardware_interface in spider.ros2_control.xacro of spider_capstone_description (this is the default URDF now)
+
+* __spider_capstone_msgs__
+  - Special message types for inter-node communication
+  - Control
+    - Sends general control data for the ActionSteppy leg gait controller.
+    - direction, stop
+  - Imu9Dof
+    - Sends linear acceleration, angular velocity, and magnetic from our 9 DoF imu.
 
 * __spider_capstone_trajectory__
   - Calculate and publish trajectory messages to the controller stack
