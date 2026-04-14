@@ -10,6 +10,7 @@ from enum import IntEnum
 class Direction(IntEnum):
     ERROR2 = Control.ERROR2
     ERROR1 = Control.ERROR1
+    IDLE = Control.IDLE
     FRONT = Control.NORTH
     FRONTLEFT = Control.NORTHWEST
     LEFT = Control.WEST
