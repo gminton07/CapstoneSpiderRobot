@@ -5,8 +5,7 @@ from rclpy.duration import Duration
 from rclpy.qos import QoSProfile, DurabilityPolicy, ReliabilityPolicy
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from std_msgs.msg import String
-# from sensor_msgs.msg import Joy                    # for joystick subscription
-from spider_capstone_msgs.msg import Control             # new joystick controller
+from sensor_msgs.msg import Joy                    # for joystick subscription
 from sensor_msgs.msg import JointState             # grab leg current place
 from control_msgs.srv import QueryTrajectoryState  # for  jtc feedback
 
@@ -49,20 +48,12 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
             qos_profile                                # just runs (ignore but still needed)
         )
         ## subscribe to the joy node:
-        # self.joy_subscription_ = self.create_subscription(
-        #     Joy,     # I think its an array?
-        #     '/joy',
-        #     self.read_joystick,
-        #     10    # how many messages can be sent at once for a topic?
-        # )
-
-
-        ## subscribe to custom Joy Controller
-        self.control_sub = self.create_subscription(
-            Control, '/spider_control', self.control_callback, 
-            10
+        self.joy_subscription_ = self.create_subscription(
+            Joy,     # I think its an array?
+            '/joy',
+            self.read_joystick,
+            10    # how many messages can be sent at once for a topic?
         )
-
         ## subscribe to leg joinyt trajectory controllers (for clean state transition)
         self.joint_state_sub = self.create_subscription(
             JointState, '/joint_states', self.joint_state_callback, 
@@ -220,73 +211,58 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
         print('AAAAAAAAAAAAAAAAAAAAAAA')
         print(response)
 
-    def control_callback(self, msg):
-        self.strafe_direction = msg.direction # update set direction
-        if self.prevDirect != self.strafe_direction: # only go if desired direction changes
-            if self.strafe_direction != "STOP":
+    def read_joystick(self, msg): # axes is defined in msg for joy subscriber,
+        if msg.buttons[0] == 1 and self.debug_button_pressed == False: # the "testing things" button
+            self.debug_button_pressed = True
+            print("debug button pressed")
+            self.transition_trajectory() # begin transitioning to next state
+            self.request_current_state() # DEBUG -- seeing if transition_trajectory is using the right points
+        elif msg.buttons[0] == 0 and self.debug_button_pressed == True:
+            self.debug_button_pressed = False
+            print("debug button released")
+
+        joy_mag      = np.sqrt(msg.axes[1]**2 + msg.axes[0]**2)
+        if joy_mag > 0.8:
+            joy_left_ang = np.arctan2(msg.axes[0],msg.axes[1]) + np.pi #the pi makes it go from 0->2pi
+            #print(f'{joy_left_ang} mag: {joy_mag}')
+        # think in 8 chunks?
+            if joy_left_ang >= 5.75:
+                self.strafe_direction = "Strafe Back"
+            elif joy_left_ang >= 5.2:
+                self.strafe_direction = "Strafe BackLeft"
+            elif joy_left_ang >= 4.2:
+                self.strafe_direction = "Strafe Left"
+            elif joy_left_ang >= 3.65:
+                self.strafe_direction = "Strafe FrontLeft"
+            elif joy_left_ang >= 2.6:
+                self.strafe_direction = "Strafe Front"
+            elif joy_left_ang >= 2.1:
+                self.strafe_direction = "Strafe FrontRight"
+            elif joy_left_ang >= 1.1: 
+                self.strafe_direction = "Strafe Right"
+            elif joy_left_ang >= 0.5:
+                self.strafe_direction = "Strafe BackRight"
+            elif joy_left_ang >= 0.0:
+                self.strafe_direction = "Strafe Back" # could have put in else,
+            else:
+                print("a joystick direction error, somehow") # should be mathmatically impossible to get here
+
+            if self.prevDirect != self.strafe_direction: # only print this on change
                 self.prevDirect = self.strafe_direction
                 print('\033[32m' + f'set direc to: {self.strafe_direction}' + '\033[0m')
                 self.try_catch_from_hell() # stop legs current goal
                 self.publish_trajectory(True) # Basically "update on change" IDEA, INSTEAD OF UPDATE, TRANSITION -> UPDATE!!
-            else: 
+                #self.transition_trajectory()
+
+        else: #joystick is not pushed, robot should stop
+            if self.current_point != [] and self.strafe_direction != "STOP":
                 self.strafe_direction = "STOP" # NOTE as of 4/1/2026 this state should NEVER be published to JCTs, just used in logic.
                 self.prevDirect = self.strafe_direction
                 print('\033[91m' + 'STOPPING STATE' + '\033[0m')
-                self.try_catch_from_hell() # stops the legs from walking. "pause".  
-
-
-    # def read_joystick(self, msg): # axes is defined in msg for joy subscriber,
-    #     if msg.buttons[0] == 1 and self.debug_button_pressed == False: # the "testing things" button
-    #         self.debug_button_pressed = True
-    #         print("debug button pressed")
-    #         self.transition_trajectory() # begin transitioning to next state
-    #         self.request_current_state() # DEBUG -- seeing if transition_trajectory is using the right points
-    #     elif msg.buttons[0] == 0 and self.debug_button_pressed == True:
-    #         self.debug_button_pressed = False
-    #         print("debug button released")
-
-    #     joy_mag      = np.sqrt(msg.axes[1]**2 + msg.axes[0]**2)
-    #     if joy_mag > 0.8:
-    #         joy_left_ang = np.arctan2(msg.axes[0],msg.axes[1]) + np.pi #the pi makes it go from 0->2pi
-    #         #print(f'{joy_left_ang} mag: {joy_mag}')
-    #     # think in 8 chunks?
-    #         if joy_left_ang >= 5.75:
-    #             self.strafe_direction = "Strafe Back"
-    #         elif joy_left_ang >= 5.2:
-    #             self.strafe_direction = "Strafe BackLeft"
-    #         elif joy_left_ang >= 4.2:
-    #             self.strafe_direction = "Strafe Left"
-    #         elif joy_left_ang >= 3.65:
-    #             self.strafe_direction = "Strafe FrontLeft"
-    #         elif joy_left_ang >= 2.6:
-    #             self.strafe_direction = "Strafe Front"
-    #         elif joy_left_ang >= 2.1:
-    #             self.strafe_direction = "Strafe FrontRight"
-    #         elif joy_left_ang >= 1.1: 
-    #             self.strafe_direction = "Strafe Right"
-    #         elif joy_left_ang >= 0.5:
-    #             self.strafe_direction = "Strafe BackRight"
-    #         elif joy_left_ang >= 0.0:
-    #             self.strafe_direction = "Strafe Back" # could have put in else,
-    #         else:
-    #             print("a joystick direction error, somehow") # should be mathmatically impossible to get here
-
-    #         if self.prevDirect != self.strafe_direction: # only print this on change
-    #             self.prevDirect = self.strafe_direction
-    #             print('\033[32m' + f'set direc to: {self.strafe_direction}' + '\033[0m')
-    #             self.try_catch_from_hell() # stop legs current goal
-    #             self.publish_trajectory(True) # Basically "update on change" IDEA, INSTEAD OF UPDATE, TRANSITION -> UPDATE!!
-    #             #self.transition_trajectory()
-
-        # else: #joystick is not pushed, robot should stop
-        #     if self.current_point != [] and self.strafe_direction != "STOP":
-        #         self.strafe_direction = "STOP" # NOTE as of 4/1/2026 this state should NEVER be published to JCTs, just used in logic.
-        #         self.prevDirect = self.strafe_direction
-        #         print('\033[91m' + 'STOPPING STATE' + '\033[0m')
-        #         self.try_catch_from_hell() # stops the legs from walking. "pause".
-        #         #self.publish_trajectory()
-        #         #self.request_current_state() # for "resquest current state" testing. unused as of 4/6/2026 
-        #         #self.transition_trajectory() # begin transition to next state
+                self.try_catch_from_hell() # stops the legs from walking. "pause".
+                #self.publish_trajectory()
+                #self.request_current_state() # for "resquest current state" testing. unused as of 4/6/2026 
+                #self.transition_trajectory() # begin transition to next state
                 
 
     def joint_state_callback(self, msg: JointState): # INTERESTING gives message of all 4 leg positions with timestamp
@@ -295,6 +271,21 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
         #print(f'bl: {msg.name}, {msg.position},')
         #print(f'timestamp: {msg.Time}') # trying to get time stamp of last point. (the one we sent it)
         #self.transition_trajectory(msg)
+
+
+    # def send_pathgoals(self):
+    #     goal_FR_msg = FollowJointTrajectory.Goal() #creates an instance goal object for a generic FollowJointTrajectory action
+    #                                                # does not know anthing, think of as blank clipboard
+    #     point =  JointTrajectoryPoint()# the goal clipboard will need a list of points, we shal create a generic "point" object
+    #     point.positions = [.4,.4,.4] 
+    #     point.time_from_start = Duration(seconds=10, nanoseconds=0).to_msg() # time stamp for single point
+
+    #     goal_FR_msg.trajectory.joint_names = self.chain_names[1] # tell clipboard what the joints are
+    #     goal_FR_msg.trajectory.points = [point]                  # attach point array (in order?) to clipboard 
+
+    #     #self.action_client_FR.wait_for_server() #???
+    #     self.action_client_FR.send_goal_async(goal_FR_msg) # shove this into print statement?
+    #     return 
 
 
     def publish_trajectory(self,transition_first = False):
