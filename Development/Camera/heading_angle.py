@@ -122,9 +122,10 @@ if args.debug:
         x1,y1,x2,y2 = line
         cv2.line(black_img,(int(x1),int(y1)),(int(x2),int(y2)),255,1)
 
-    cv2.imshow('lines detected',black_img)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+#    cv2.imshow('lines detected',black_img)
+    cv2.imwrite('Lines detected.jpeg', black_img)
+#    cv2.waitKey(0)
+#    cv2.destroyAllWindows()
 
 # perform computation and replot for testing #
 
