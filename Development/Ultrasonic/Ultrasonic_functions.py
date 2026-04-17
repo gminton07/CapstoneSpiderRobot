@@ -1,7 +1,7 @@
 import RPi.GPIO as GPIO
 import time
 
-def Initialize_Ult(pin_read, pin_out)
+def Initialize_Ult(pin_read, pin_out):
     
     # Set the board mode #
     GPIO.setmode(GPIO.BCM)
@@ -17,18 +17,19 @@ def Initialize_Ult(pin_read, pin_out)
 
 
 # Under assumption the configuration for the GPIO warnings and mode is preconfigured in the main script when calling #
-def Distance_Read(Read,Trigger) # This is for setting the pin layout #
+def Distance_Read(Read,Trigger): # This is for setting the pin layout #
 
     GPIO.output(Trigger,True)
     time.sleep(.00001) # Sendout one pulse #
     GPIO.output(Trigger,False)
+
 
     # Read right after signal left
     start_time = time.time()
 
     # Check when the read in pin detects the ultrasonic reflection #
     while GPIO.input(Read) == False:
-        end_time = time.time()
+        pass
 
     # Find when the it stops detecting (This would be the true travel dT) #
     while GPIO.input(Read) == True:
