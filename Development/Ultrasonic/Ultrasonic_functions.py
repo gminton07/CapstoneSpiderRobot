@@ -23,22 +23,19 @@ def Distance_Read(Read,Trigger): # This is for setting the pin layout #
     time.sleep(.00001) # Sendout one pulse #
     GPIO.output(Trigger,False)
 
-
-    # Read right after signal left
-    start_time = time.time()
-
     # Check when the read in pin detects the ultrasonic reflection #
     while GPIO.input(Read) == False:
-        pass
+        # Read right after signal left
+        start_time = time.time()
 
     # Find when the it stops detecting (This would be the true travel dT) #
     while GPIO.input(Read) == True:
-        end_time_prime = time.time()
+        end_time = time.time()
 
 
 
     # Find the time difference #
-    delta_T = end_time_prime - start_time
+    delta_T = end_time - start_time
 
     # Speed of sound in room temperature #
     V_temp = 340  # Set to meters/s #
