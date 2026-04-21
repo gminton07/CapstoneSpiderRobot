@@ -3,8 +3,9 @@ import numpy as np
 import cv2
 from Take_Image import Capture_Image
 
+def Color_Camera
 
-def Camera(resolution=(1640, 1230), debug = False, debug_img = False, ApertureSize = 3, Gradient = (50,80), take_img=False):
+def Camera(resolution=(1640, 1230), HSV_lim = (160, 180) , debug = False, debug_img = False, ApertureSize = 3, Gradient = (50,80), take_img=False):
     
     # Select the Camera Resolution #
     row = resolution[0]
@@ -21,43 +22,59 @@ def Camera(resolution=(1640, 1230), debug = False, debug_img = False, ApertureSi
     
     
     # Debug statement of saving the image #
-    if debug_img:
-        cv2.imwrite('test_image.png',img)
-        print('saving image as test_image')
+#    if debug_img:
+#        cv2.imwrite('test_image.png',img)
+#        print('saving image as test_image')
     
-    # Convert image to grayscale #
-    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # Convert image to HSV #
+    HSV_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
+    # Mask the HSV range to look for desired color #
+    Mask_img = cv2.inRange(HSV_img, (HSV_lim[0],150, 150), (HSV_lim[1], 255, 255) )
+
+    # Find the moments of the Masked image #
+    M = cv2.moments(Mask_img)
+    cX = int(M['m10']/M['m00'])
+    cY = int(M['m01']/M['m00'])
+
+    # Find the center of the image #
+    center = [int(resolution[1]/2) , int(resolution[0]/2) ) # [x,y] #
+    heading_angle = np.arctan( (abs(cX - center[0]))/ (abs(center[0] - cY)) )
+    heading_angle = heading_angle * 180/(np.pi)
+
+
+####### Everything below is commented out to accomodate the color detection algorithm #######
     
     # Blur out the image interpolating a 5x5 area surrounding pixel #
-    blur_gray_img = cv2.blur(gray_img,(3,3)) # Altering might help with line detect? #
+#    blur_gray_img = cv2.blur(gray_img,(3,3)) # Altering might help with line detect? #
     
-    if debug_img:
-        cv2.imwrite('test_gray_img.png',blur_gray_img)
-        print('saving the image as a test image')
+#    if debug_img:
+#        cv2.imwrite('test_gray_img.png',blur_gray_img)
+#        print('saving the image as a test image')
     
     # Apply Canny detection #
-    canny_img = cv2.Canny(blur_gray_img, Gradient[0], Gradient[1],apertureSize=ApertureSize)
+#    canny_img = cv2.Canny(blur_gray_img, Gradient[0], Gradient[1],apertureSize=ApertureSize)
     
     # Apply the lines detection #
-    lines = cv2.HoughLinesP(canny_img, 1, np.pi/180, threshold = 100, minLineLength=20, maxLineGap=10)
+#    lines = cv2.HoughLinesP(canny_img, 1, np.pi/180, threshold = 100, minLineLength=20, maxLineGap=10)
 
     # Extrapolate the lines #    
-    if lines is not None:
-        data=lines.reshape(-1,4)
-        if debug_img:
+#    if lines is not None:
+#        data=lines.reshape(-1,4)
+#        if debug_img:
             # Create a black image to plot lines detected #
-            black_img = np.zeros( (resolution[1], resolution[0]), dtype = 'uint8' )
-            for line in lines:
-                x1,y1,x2,y2 = line[0]
-                cv2.line(black_img, (x1,y1), (x2,y2), 255,1)
-            cv2.imshow('before magnitude and angular filter', black_img)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
+#            black_img = np.zeros( (resolution[1], resolution[0]), dtype = 'uint8' )
+#            for line in lines:
+#                x1,y1,x2,y2 = line[0]
+#                cv2.line(black_img, (x1,y1), (x2,y2), 255,1)
+#            cv2.imshow('before magnitude and angular filter', black_img)
+#            cv2.waitKey(0)
+#            cv2.destroyAllWindows()
     # Call in additional Image processing #
-    img_process(data, debug = debug)
+#    img_process(data, debug = debug)
     
     
-    return
+    return heading_angle
 
 
 def img_process(data,angle_offset=10, debug=False,resolution = (1640,1230), distance_filter = 20):
