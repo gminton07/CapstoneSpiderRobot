@@ -40,7 +40,7 @@ class JointTrajectoryPlot(Node):
         super().__init__('joint_trajectory_plot')
 
         # Define constants
-        self.THROTTLE_DURATION = 1.0        # How often to show logger statements
+        self.THROTTLE_DURATION = 10.0        # How often to show logger statements
         self.MARKER_NUM_PTS = 50            # Number of points in Marker msg, loop through them
         self.LOOP_COUNTER = 0               # How many times Marker points are updated
         self.PUBLISH_HZ = 30
