@@ -21,9 +21,9 @@ def inverse_kinematic(Point):
     
     
     # Link Lengths #
-    Link1 = 3.8
-    Link2 = 4.19
-    Link3 = 4.67
+    Link1 = 5
+    Link2 = 9
+    Link3 = 10.5
     
     # Find the shoulder angle theta 1 #
     theta1 = np.arctan2(Y,X)+np.pi/4
@@ -74,9 +74,9 @@ def inverse_kinematic_FR(Point):
     
     
     # Link Lengths #
-    Link1 = 3.8
-    Link2 = 4.19
-    Link3 = 4.67
+    Link1 = 5
+    Link2 = 9
+    Link3 = 10.5
     
     # Find the shoulder angle theta 1 #
     theta1 = np.arctan2(Y,X)+np.pi/4
@@ -121,9 +121,9 @@ def inverse_kinematic_FL(Point):
     
     
     # Link Lengths #
-    Link1 = 3.8
-    Link2 = 4.19
-    Link3 = 4.67
+    Link1 = 5
+    Link2 = 9
+    Link3 = 10.5
     
     # Find the shoulder angle theta 1 #
     theta1 = np.arctan2(Y,X)-np.pi/4
@@ -166,9 +166,9 @@ def inverse_kinematic_RL(Point):
     
     
     # Link Lengths #
-    Link1 = 3.8
-    Link2 = 4.19
-    Link3 = 4.67
+    Link1 = 5
+    Link2 = 9
+    Link3 = 10.5
     
     # Find the shoulder angle theta 1 #
     theta1 = np.arctan2(Y,X)-np.pi*3/4
@@ -213,9 +213,9 @@ def inverse_kinematic_RR(Point):
     
     
     # Link Lengths #
-    Link1 = 3.8
-    Link2 = 4.19
-    Link3 = 4.67
+    Link1 = 5
+    Link2 = 9
+    Link3 = 10.5
     
     # Find the shoulder angle theta 1 #
     theta1 = np.arctan2(Y,X)+np.pi*3/4

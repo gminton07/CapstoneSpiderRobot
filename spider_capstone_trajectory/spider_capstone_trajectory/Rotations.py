@@ -163,10 +163,10 @@ def walking_cycle(gamma):
     walking_path = np.vstack((x_points,y_points,z_points,np.ones((1,len(x_points)))))
     
         
-    Rot_Front_Right = np.array([[np.cos(gamma), -np.sin(gamma),0,7.965677269102155-.2],[np.sin(gamma), np.cos(gamma),0,-7.273934903508881+.2],[0,0,1,-7.6327774131716355 +2],[0,0,0,1]])
-    Rot_Front_Left = np.array([[np.cos(gamma), -np.sin( gamma), 0, 7.965677269102155-.2],[np.sin(gamma),np.cos(gamma),0,7.273934903508881-.2],[0,0,1,-7.6327774131716355 +2],[0,0,0,1]])
-    Rot_Rear_Left = np.array([[np.cos(gamma), -np.sin( gamma), 0, -7.965677269102155+.2],[np.sin(gamma), np.cos(gamma),0,7.273934903508881-.2],[0,0,1,-7.6327774131716355 +2],[0,0,0,1]])
-    Rot_Rear_Right = np.array([[np.cos(gamma), -np.sin(gamma), 0, -7.965677269102155+.2],[np.sin(gamma), np.cos(gamma),0,-7.273934903508881+.2],[0,0,1,-7.6327774131716355 +2],[0,0,0,1]])
+    Rot_Front_Right = np.array([[np.cos(gamma), -np.sin(gamma),0,7.965677269102155-.2],[np.sin(gamma), np.cos(gamma),0,-7.273934903508881+.2],[0,0,1,-7.6327774131716355],[0,0,0,1]])
+    Rot_Front_Left = np.array([[np.cos(gamma), -np.sin( gamma), 0, 7.965677269102155-.2],[np.sin(gamma),np.cos(gamma),0,7.273934903508881-.2],[0,0,1,-7.6327774131716355],[0,0,0,1]])
+    Rot_Rear_Left = np.array([[np.cos(gamma), -np.sin( gamma), 0, -7.965677269102155+.2],[np.sin(gamma), np.cos(gamma),0,7.273934903508881-.2],[0,0,1,-7.6327774131716355],[0,0,0,1]])
+    Rot_Rear_Right = np.array([[np.cos(gamma), -np.sin(gamma), 0, -7.965677269102155+.2],[np.sin(gamma), np.cos(gamma),0,-7.273934903508881+.2],[0,0,1,-7.6327774131716355],[0,0,0,1]])
     
     rot_walking_path_FR = Rot_Front_Right @ walking_path
     rot_walking_path_FL = Rot_Front_Left@walking_path
