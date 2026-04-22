@@ -50,7 +50,7 @@ def generate_launch_description():
     model_path = PathJoinSubstitution([
         FindPackageShare('spider_capstone_description'),
         'urdf',
-        'spider.urdf.xacro'
+        'spider_v2.urdf.xacro'
     ])
 
     rviz_config_path = PathJoinSubstitution([

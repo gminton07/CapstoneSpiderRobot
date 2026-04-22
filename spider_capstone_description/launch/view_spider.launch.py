@@ -28,7 +28,7 @@ def generate_launch_description():
         # Declared arguments
         DeclareLaunchArgument(
             'model',
-            default_value='spider.urdf.xacro',
+            default_value='spider_v2.urdf.xacro',
             description='URDF/Xacro file'
             ),
 
