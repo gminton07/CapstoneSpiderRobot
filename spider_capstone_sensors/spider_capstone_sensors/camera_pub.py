@@ -28,33 +28,36 @@ class CameraNode(Node):
 
 
     def timer_callback(self):
-        rval, frame = self.cap.read()
+        frame = self.cap
 
         heading_angle=self.image_process(frame)
 
         ### ADDED HERE ###
-        msg = String
-        msg.data = heading_angle
+        msg = String()
+        msg.data = str(heading_angle)
+        self.get_logger().info(f'sending heading angle {msg.data}')
         self.cam_pub.publish(msg)
         ### ADDED HERE ###
 
     def image_process(self, frame):
         # TODO: Add computations and
         # publish on self.cam_pub
-        
+
         # Switch the image into an HSV image for color detection #
         HSV_img = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
-        Mask_img = cv2.inRange(HSV_img, (160,130,80),(180, 255, 255))
+        Mask_img = cv2.inRange(HSV_img, (130,100,80),(180, 255, 255))
         Blur_img = cv2.blur(Mask_img,(5,5))
 
         thresh = cv2.threshold(Blur_img, 200,255,cv2.THRESH_BINARY)[1]
         M = cv2.moments(thresh)
-        cX = int(M['m10']/M['m00'])
-        cY = int(M['m01']/M['m00'])
-
-        center = [int(1640/2) , int(1230/2) ] #[x,y]#
-        heading_angle = np.arctan2( (center[0]-cX) , (abs(center[1] - cY)) )
-        heading_angle = heading_angle * 180/(np.pi)
+        if M['m00'] == 0:
+            heading_angle = 0
+        else:
+            cX = int(M['m10']/M['m00'])
+            cY = int(M['m01']/M['m00'])
+            center = [int(1640/2) , int(1230/2) ] #[x,y]#
+            heading_angle = np.arctan2(  (center[1] - cY) , abs(center[0]-cX) )
+            heading_angle = heading_angle * 180/(np.pi)
 
         # TODO: What message format does the auto_control
         # node require?
