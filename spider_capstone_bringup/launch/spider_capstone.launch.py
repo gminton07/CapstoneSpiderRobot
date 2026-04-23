@@ -163,6 +163,10 @@ def generate_launch_description():
                 package='spider_capstone_sensors',
                 executable='auto_controller'
             ),
+            Node(
+                package='spider_capstone_sensors',
+                executable='Ultrasonic_node'
+            )
         ]
     )
 
