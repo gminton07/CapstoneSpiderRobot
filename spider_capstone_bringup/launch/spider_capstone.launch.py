@@ -65,6 +65,14 @@ def generate_launch_description():
         'spider_capstone_controllers.yaml'
     ])
 
+    # Robot Description MUST go in robot_state_publisher and controller_manager/ros2_control_node
+    robot_desc_param = {'robot_description': Command([
+        'xacro ',
+        model_path,
+        ' use_mock_hardware:=',
+        use_mock_hardware
+    ])}
+
     # -----------------------------
     # Core Group (conditional)
     # -----------------------------
@@ -75,20 +83,13 @@ def generate_launch_description():
             Node(
                 package='robot_state_publisher',
                 executable='robot_state_publisher',
-                parameters=[{
-                    'robot_description': Command([
-                        'xacro ',
-                        model_path,
-                        ' use_mock_hardware:=',
-                        use_mock_hardware
-                    ])
-                }]
+                parameters=[robot_desc_param] 
             ),
 
             Node(
                 package='controller_manager',
                 executable='ros2_control_node',
-                parameters=[controllers_yaml]
+                parameters=[robot_desc_param, controllers_yaml] 
             ),
 
             # Controller spawners
