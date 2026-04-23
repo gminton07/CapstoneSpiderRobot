@@ -1,7 +1,8 @@
 import rclpy
+import numpy as np
 from rclpy.node import Node
 from std_msgs.msg import String ## Placeholder
-
+from Camera_Functions import Capture_Image
 import cv2
 
 class CameraNode(Node):
@@ -20,22 +21,37 @@ class CameraNode(Node):
                 self.timer_callback
         )
 
-        self.cap = cv2.VideoCapture('/dev/video0', cv2.CAP_V4L)
+        self.cap = Capture_Image()
         # TODO: Set height and width for self.cap
+
 
     def timer_callback(self):
         rval, frame = self.cap.read()
 
-        self.image_process(frame)
+        heading_angle=self.image_process(frame)
 
     def image_process(self, frame):
-        # TODO: Add computations and 
+        # TODO: Add computations and
         # publish on self.cam_pub
+        
+        # Switch the image into an HSV image for color detection #
+        HSV_img = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
+        Mask_img = cv2.inRange(HSV_img, (160,130,80),(180, 255, 255))
+        Blur_img = cv2.blur(Mask_img,(5,5))
+
+        thresh = cv2.threshold(Blur_img, 200,255,cv2.THRESH_BINARY)[1]
+        M = cv2.moments(thresh)
+        cX = int(M['m10']/M['m00'])
+        cY = int(M['m01']/M['m00'])
+
+        center = [int(1640/2) , int(1230/2) ] #[x,y]#
+        heading_angle = np.arctan2( (center[0]-cX) , (abs(center[1] - cY)) )
+        heading_angle = heading_angle * 180/(np.pi)
 
         # TODO: What message format does the auto_control
         # node require?
 
-        raise NotImplementedError
+        raise heading_angle
 
 
 def main():
