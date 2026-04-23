@@ -59,7 +59,7 @@ class CameraNode(Node):
         # TODO: What message format does the auto_control
         # node require?
 
-        raise heading_angle
+        return heading_angle
 
 
 def main():
