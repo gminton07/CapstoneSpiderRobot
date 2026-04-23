@@ -30,6 +30,7 @@ setup(
             f'joint_trajectory = {package_name}.joint_trajectory:main',
             f'BigSteppy = {package_name}.BigSteppy:main',
             f'ActionSteppy = {package_name}.ActionSteppy:main',
+            f'GoSteppy = {package_name}.GoSteppy:main',
         ],
     },
 )

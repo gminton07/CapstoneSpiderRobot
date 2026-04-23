@@ -109,6 +109,9 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
                                 "STOP":{1:[[0,0,0],[0,0,0]], 2:[[0,0,0],[0,0,0]],3:[[0,0,0],[0,0,0]],4:[[0,0,0],[0,0,0]]}}
         self.strafe_direction = "Strafe Front" # initial walking direction
 
+        self.chains = {}
+        self.chain_names = {}
+
     def urdf_callback(self, msg: JointTrajectory): #extracts names of joints from urdf tree.
         '''
         Create the Chain and extract mobile joint names for each leg
@@ -122,8 +125,7 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
             tip_link = 'fr_end_effector'
             tip_link = ['fr_end_effector', 'fl_end_effector', 'bl_end_effector', 'br_end_effector']
 
-            self.chains = {}
-            self.chain_names = {}
+
 
             for i in range(0,4):
                 chain = self.tree.getChain(base_link, tip_link[i])
@@ -336,6 +338,7 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
 
     def publish_trajectory(self,transition_first = False):
         if not self.chains: # stops the chain error
+            print("chain error race condition occured")
             return
         # print(self.chain_names)
         if self.strafe_direction == "STOP": #put here so stop does not attempt to walk along a non-existant path.
@@ -381,7 +384,7 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
                 point.time_from_start = Duration(seconds=1.5).to_msg() #adds how much time it takes to get to point.
                 self.goal_msgs[j].trajectory.points.append(point)
                 #self.goal_msgs[j].trajectory.joint_names = self.chain_names[j] # finally attach chain names
-                point_duration = 0.51 + (j/2)  ## NOTE j is supposed to stagger the legs so the robot does not trip
+                point_duration = 1.51 #+ (j/2)  ## NOTE j is supposed to stagger the legs so the robot does not trip
                 ### /\ gives time for transition to happen 
                 ## NOTE NOTE NOTE  IF THE SAME POINT_DURATION IS USED TWICE IT FREEZES WITHOUT THROWING AN ERROR!!!!!
             
