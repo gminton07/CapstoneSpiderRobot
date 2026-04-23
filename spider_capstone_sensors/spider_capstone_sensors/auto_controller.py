@@ -80,6 +80,7 @@ class AutoControl(Node):
 
     def camera_cb(self, msg):
         self.camera_msg_data = msg.data
+        self.get_logger().info(self.camera_msg_data)
 
     def ultra_cb(self, msg):
         self.distance = msg.data
