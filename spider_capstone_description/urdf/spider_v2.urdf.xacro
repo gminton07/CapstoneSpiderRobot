@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="spider">
+  <!--  Arguments  -->
+  <xacro:arg name="use_mock_hardware" default="false"/>
+
+  <!--  Include Xacro files  -->
+  <xacro:include filename="$(find spider_capstone_description)/ros2_control/spider.ros2_control.xacro"/>
+  <xacro:spider_ros2_control use_mock_hardware="$(arg use_mock_hardware)"/>
+  <xacro:include filename="$(find spider_capstone_description)/urdf/leg_v2.urdf.xacro"/>
+
+  <!--  Colors  -->
+  <material name="blue">
+          <color rgba="0 0 0.8 1"/>
+  </material>
+  <material name="green">
+          <color rgba="0 0.8 0 1"/>
+  </material>
+  <material name="red">
+          <color rgba="0.8 0 0 1"/>
+  </material>
+  <material name="white">
+          <color rgba="0.8 0.8 0.8 1"/>
+  </material>
+  <material name="black">
+    <color rgba="0 0 0 1"/>
+  </material>
+
+  <!--  Macro Properties  -->
+  <xacro:property name="mesh_dir" value="package://spider_capstone_description/meshes/V2"/>
+  <xacro:property name="mesh_scale" value="0.001"/>
+  <xacro:property name="scale3" value="${mesh_scale} ${mesh_scale} ${mesh_scale}"/>
+
+  <!--  Define base  -->
+  <link name="base_link"/>
+
+  <joint name="base_link_to_BaseLowerPlate" type="fixed">
+          <parent link="base_link"/>
+          <child link="BaseLowerPlate"/>
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <link name="BaseLowerPlate">
+          <visual>
+                  <geometry>
+                          <mesh filename="${mesh_dir}/BaseLowerPlate.stl" scale="${scale3}"/>
+                  </geometry>
+                  <material name="blue"/>
+                  <origin xyz="-0.0795 0.0877 0.021" rpy="${pi} 0 0"/>
+          </visual>
+  </link>
+
+  <joint name="BaseLowerPlate_to_BaseUpperPlate" type="fixed">
+          <parent link="BaseLowerPlate"/>
+          <child link="BaseUpperPlate"/>
+          <origin xyz="0 0 0.1" rpy="0 0 0"/>
+  </joint>
+
+  <link name="BaseUpperPlate">
+          <visual>
+                  <geometry>
+                          <mesh filename="${mesh_dir}/BaseUpperPlate.stl" scale="${scale3}"/>
+                  </geometry>
+                  <material name="blue"/>
+                  <origin xyz="0 0 0" rpy="0 0 0"/>
+          </visual>
+  </link>
+
+<!-- Call macro to create each leg -->
+  <xacro:leg prefix="fr">
+    <origin xyz="0.065 -0.0700 0.0235" rpy="0 0 ${-3*pi/4}"/>
+  </xacro:leg>
+  <xacro:leg prefix="fl">
+    <origin xyz="0.065 0.0700 0.0235" rpy="0 0 ${-pi/4}"/>
+  </xacro:leg>
+  <xacro:leg prefix="bl">
+    <origin xyz="-0.065 0.0700 0.0235" rpy="0 0 ${1*pi/4}"/>
+  </xacro:leg>
+  <xacro:leg prefix="br">
+    <origin xyz="-0.065 -0.0700 0.0235" rpy="0 0 ${3*pi/4}"/>
+  </xacro:leg>
+
+</robot>

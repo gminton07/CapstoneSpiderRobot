@@ -9,6 +9,7 @@
 #include <kdl/chainjnttojacsolver.hpp>
 #include <kdl/frames.hpp>
 #include <kdl/jacobian.hpp>
+#include <kdl/chainiksolverpos_lma.hpp>
 
 namespace py = pybind11;
 
@@ -104,17 +105,22 @@ PYBIND11_MODULE(kdl_wrapper, m) {
 
 	// Rotation (roll, pitch, yaw)
 	py::class_<KDL::Rotation>(m, "Rotation")
+		.def(py::init<>()) // Default constructor (Identity matrix)
+        .def_static("RPY", [](double R, double P, double Y) {
+            return KDL::Rotation::RPY(R, P, Y);
+        })
 		.def("GetRPY", [](const KDL::Rotation& r) {
 			double roll, pitch, yaw;
 			r.GetRPY(roll, pitch, yaw);
 			return py::make_tuple(roll, pitch, yaw);
 		});
 
-	// Frame (Pose containing Vector p and Rotation m)
-	py::class_<KDL::Frame>(m, "Frame")
-		.def(py::init<>())
-		.def_property_readonly("p", [](const KDL::Frame& f) {return f.p; })
-		.def_property_readonly("M", [](const KDL::Frame& f) {return f.M; });
+	// Frame Class Update
+    py::class_<KDL::Frame>(m, "Frame")
+        .def(py::init<>()) // Default (Identity)
+        .def(py::init<const KDL::Rotation&, const KDL::Vector&>()) // THE FIX: Constructor
+        .def_readwrite("p", &KDL::Frame::p)
+        .def_readwrite("M", &KDL::Frame::M);
 
 	// Jacobian
     py::class_<KDL::Jacobian>(m, "Jacobian")
@@ -155,4 +161,16 @@ PYBIND11_MODULE(kdl_wrapper, m) {
         });
 
 	m.def("tree_from_xml", &tree_from_xml, "Convert URDF XML string to KDL tree.");
+
+	// Get IK (Levenberg-Marquardt)
+	// Inverse Kinematics Solver (LMA)
+	py::class_<KDL::ChainIkSolverPos_LMA>(m, "ChainIkSolverPos_LMA")
+		.def(py::init<const KDL::Chain&>())
+		.def("CartToJnt", [](KDL::ChainIkSolverPos_LMA& self, const KDL::JntArray& q_init, const KDL::Frame& p_in) {
+			KDL::JntArray q_out(q_init.rows());
+			// CartToJnt returns an int status. < 0 is a critical failure.
+			int status = self.CartToJnt(q_init, p_in, q_out);
+			// We return a tuple so Python can check if the solver actually found a valid solution
+			return py::make_tuple(status, q_out);
+		});
 }

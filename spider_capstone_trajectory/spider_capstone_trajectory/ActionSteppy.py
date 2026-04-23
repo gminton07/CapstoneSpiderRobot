@@ -221,18 +221,55 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
         print(response)
 
     def control_callback(self, msg):
-        self.strafe_direction = msg.direction # update set direction
-        if self.prevDirect != self.strafe_direction: # only go if desired direction changes
-            if self.strafe_direction != "STOP":
-                self.prevDirect = self.strafe_direction
-                print('\033[32m' + f'set direc to: {self.strafe_direction}' + '\033[0m')
-                self.try_catch_from_hell() # stop legs current goal
-                self.publish_trajectory(True) # Basically "update on change" IDEA, INSTEAD OF UPDATE, TRANSITION -> UPDATE!!
-            else: 
-                self.strafe_direction = "STOP" # NOTE as of 4/1/2026 this state should NEVER be published to JCTs, just used in logic.
-                self.prevDirect = self.strafe_direction
-                print('\033[91m' + 'STOPPING STATE' + '\033[0m')
-                self.try_catch_from_hell() # stops the legs from walking. "pause".  
+        # matching chunk
+        if self.prevDirect != msg.direction:
+            self.prevDirect = msg.direction
+            self.try_catch_from_hell() ## stop the legs as direction is about to change
+            match msg.direction:
+                case Control.IDLE:
+                    self.strafe_direction = "STOP"
+                case Control.NORTH:
+                    self.strafe_direction = "Strafe Front"
+                case Control.NORTHWEST:
+                    self.strafe_direction = "Strafe FrontLeft"
+                case Control.WEST:
+                    self.strafe_direction = "Strafe Left"
+                case Control.SOUTHWEST:
+                    self.strafe_direction = "Strafe BackLeft"
+                case Control.SOUTH:
+                    self.strafe_direction = "Strafe Back"
+                case Control.SOUTHEAST:
+                    self.strafe_direction = "Strafe BackRight"
+                case Control.EAST:
+                    self.strafe_direction = "Strafe Right"
+                case Control.NORTHEAST:
+                    self.strafe_direction = "Strafe FrontRight"
+                case Control.ROTCW:
+                    print("cw rotation currently not supported")
+                case Control.ROTCCW:
+                    print("ccw rotation currently not supported")
+                case Control.ERROR1:
+                    print("Error 1 recieved by ActionSteppy control")
+                case Control.ERROR2:
+                    print("Error 2 recieved by ActionSteppy control")
+                case _:
+                    print('\033[91m' + "something REALLY failed" + '\033[0m')
+            self.publish_trajectory(True) # move the legs, TRUE so the function knows not to jump
+
+
+
+        # self.strafe_direction = msg.direction # update set direction
+        # if self.prevDirect != self.strafe_direction: # only go if desired direction changes
+        #     if self.strafe_direction != "STOP":
+        #         self.prevDirect = self.strafe_direction
+        #         print('\033[32m' + f'set direc to: {self.strafe_direction}' + '\033[0m')
+        #         self.try_catch_from_hell() # stop legs current goal
+        #         self.publish_trajectory(True) # Basically "update on change" IDEA, INSTEAD OF UPDATE, TRANSITION -> UPDATE!!
+        #     else: 
+        #         self.strafe_direction = "STOP" # NOTE as of 4/1/2026 this state should NEVER be published to JCTs, just used in logic.
+        #         self.prevDirect = self.strafe_direction
+        #         print('\033[91m' + 'STOPPING STATE' + '\033[0m')
+        #         self.try_catch_from_hell() # stops the legs from walking. "pause".  
 
 
     # def read_joystick(self, msg): # axes is defined in msg for joy subscriber,
@@ -301,8 +338,8 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
         if not self.chains: # stops the chain error
             return
         # print(self.chain_names)
-        if self.strafe_direction == "STOP":
-            print("aborted erronious walk")
+        if self.strafe_direction == "STOP": #put here so stop does not attempt to walk along a non-existant path.
+            print("Skip walk because in STOP STATE")
             return # if in stop staste, dont try to walk.
 
         #self.get_logger().info('publish_trajectory') # send logger message (shows up in terminal for debugging)
@@ -314,9 +351,6 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
         goal_BR_msg = FollowJointTrajectory.Goal() # creates an object of jointTrajectory Message type
         self.goal_msgs = {1: goal_FR_msg, 2: goal_FL_msg, 3: goal_BL_msg, 4: goal_BR_msg} #array became disctonary :D
         
-        # for i in goal_msgs: # honest no clue whatthis is for, does not crash if I comment it out.
-        #     goal_msgs[i].header.stamp = self.get_clock().now().to_msg() # timestamps message
-        #     goal_msgs[i].header.frame_id = 'base_link' # its an id, has to be here
 
         ## Append points to trajectory
         print(f'walking with: -{self.strafe_direction}- point array')
@@ -347,7 +381,8 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
                 point.time_from_start = Duration(seconds=1.5).to_msg() #adds how much time it takes to get to point.
                 self.goal_msgs[j].trajectory.points.append(point)
                 #self.goal_msgs[j].trajectory.joint_names = self.chain_names[j] # finally attach chain names
-                point_duration = 1.51 ### gives time for transition to happen 
+                point_duration = 0.51 + (j/2)  ## NOTE j is supposed to stagger the legs so the robot does not trip
+                ### /\ gives time for transition to happen 
                 ## NOTE NOTE NOTE  IF THE SAME POINT_DURATION IS USED TWICE IT FREEZES WITHOUT THROWING AN ERROR!!!!!
             
             for points in self.walk_array_dict[self.strafe_direction][j]: #point_array: # only runs once, part of set up. (packages each point for message sendoff)
@@ -463,7 +498,6 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
         self.goal_handle_BR = goal_handle
 
 
-
     def on_step_finish_callback(self, future):  # ACTIVATES WHEN ACTION just FINISHED
         #print("action completed??")
         # #print(f'Completed goal? {future.status}')
@@ -493,7 +527,6 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
         #     print(f'how heck did it get {self.finished_actions}?')
         # else: # counts the legs, seriously WHY DO GOAL/FUTURE OBJECTS LACK NAME IDENTIFIRES, NO THE ID VALUE IS INSTANCE UNIQUE
         #     print(f'counting, {self.finished_actions}')
-
 
 
 # GENERIC FUNCTIONS  (not part of class but may be used by instances)

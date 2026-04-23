@@ -17,6 +17,7 @@ setup(
         (os.path.join('share', package_name, 'ros2_control'), glob('ros2_control/*')),
         (os.path.join('share', package_name, 'meshes/Prototype'), glob('meshes/Prototype/*')),
         (os.path.join('share', package_name, 'meshes', 'V1'), glob('meshes/V1/*')),
+        (os.path.join('share', package_name, 'meshes', 'V2'), glob('meshes/V2/*')),
         (os.path.join('share', package_name, 'rviz'), glob('rviz/*')),
     ],
     install_requires=['setuptools'],
