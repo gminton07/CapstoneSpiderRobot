@@ -29,6 +29,7 @@ setup(
             f'icm_node = {package_name}.icm_pub:main',
             f'auto_controller = {package_name}.auto_controller:main',
             f'PowerLogger = {package_name}.PowerLogger:main',
+            f'Ultrasonic_node = {package_name}.Ultrasonic_pub:main'
         ],
     },
 )

@@ -1,7 +1,12 @@
 # Publisher for Ultrasonic
+import rclpy
+from rclpy.node import Node
+from std_msgs.msg import String
+
 import RPi.GPIO as GPIO
 import time
-from Ultrasonic_functions import Initialize_Ult, Distance_Read
+
+from .Ultrasonic_functions import Initialize_Ult, Distance_Read
 
 
 class Ultrasonic(Node):
@@ -10,8 +15,8 @@ class Ultrasonic(Node):
 
         # Create publisher & timer
         self.Ultrasonic_pub = self.create_publisher(
-                Ultrasonic,
-                '/Ultrasonic_pub',
+                String,
+                '/ultrasonic_pub',
                 10
         )
 
@@ -31,6 +36,13 @@ class Ultrasonic(Node):
         # input pins as arguments for pin1 and pin2 (trig, echo) #
         self.initialize_ult(self.pin1, self.pin2)
         distance = self.distance(self.pin1, self.pin2)
+
+        ### ADDED HERE ###
+        msg = String
+        msg.data = distance
+        self.Ultrasonic_pub.publish(msg)
+        ### ADDED HERE ###
+        
     
 def main():
     rclpy.init()

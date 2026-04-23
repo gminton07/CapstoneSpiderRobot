@@ -1,5 +1,6 @@
 import rclpy
 from rclpy.node import Node
+from std_msgs.msg import String
 
 from spider_capstone_msgs.msg import Control, Imu9Dof
 
@@ -27,6 +28,15 @@ class AutoControl(Node):
     def __init__(self):
         super().__init__('auto_control')
 
+        # Create msg data objects
+        self.acceleration = None
+        self.gyro = None
+        self.magnetic = None
+
+        self.camera_msg_data = None
+
+        self.distance = None
+
         # Create subscribers
         self.imu_sub = self.create_subscription(
             Imu9Dof,
@@ -35,9 +45,19 @@ class AutoControl(Node):
             10
         )
          
-        # TODO Camera subscription
-        '''self.cam_sub
-        '''
+        self.camera_sub = self.create_subscription(
+            String,
+            '/camera_pub',
+            self.camera_cb,
+            10
+        )
+
+        self.ultra_sub = self.create_subscription(
+            String,
+            '/ultrasonic_pub',
+            self.ultra_cb,
+            10
+        )
         
         # Create publisher
         self.control_pub = self.create_publisher(
@@ -58,15 +78,35 @@ class AutoControl(Node):
         self.gyro = msg.angular_gyr
         self.magnetic = msg.magnetic
 
+    def camera_cb(self, msg):
+        self.camera_msg_data = msg.data
+
+    def ultra_cb(self, msg):
+        self.distance = msg.data
+
     def timer_cb(self):
-        # TODO: Algorithm taking in IMU and camera data
+        # TODO: Algorithm taking in IMU and camera and ultrasonic data
         # and giving an output
-
+        
+        # Break if messages not received yet
+        if not (self.acceleration and self.camera_msg_data and self.distance):
+            return None
+        
         msg = Control()
-        # msg.direction from Direction enum
-        # msg.stop -> stop ActionSteppy
 
-        raise NotImplementedError
+        MIN_DIST = 10   # Minimum distance before stopping
+        if self.distance < MIN_DIST:
+            msg.stop = True
+
+        
+        ### PSEUDOCODE: ###
+        if self.camera_msg_data < 0:    # Turn LEFT?
+            msg.direction = Direction.ROTCCW
+        elif self.camera_msg_data > 0:
+            msg.direction = Direction.ROTCW 
+        ### PSEUDOCODE ###
+
+        self.control_pub.publish(msg)
 
 
 def main():

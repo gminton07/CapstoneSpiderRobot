@@ -1,9 +1,11 @@
 import rclpy
-import numpy as np
 from rclpy.node import Node
 from std_msgs.msg import String ## Placeholder
-from Camera_Functions import Capture_Image
+
+import numpy as np
 import cv2
+
+from .Camera_Functions import Capture_Image
 
 class CameraNode(Node):
     def __init__(self):
@@ -29,6 +31,12 @@ class CameraNode(Node):
         rval, frame = self.cap.read()
 
         heading_angle=self.image_process(frame)
+
+        ### ADDED HERE ###
+        msg = String
+        msg.data = heading_angle
+        self.cam_pub.publish(msg)
+        ### ADDED HERE ###
 
     def image_process(self, frame):
         # TODO: Add computations and
