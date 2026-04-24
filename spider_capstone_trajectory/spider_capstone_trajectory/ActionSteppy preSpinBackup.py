@@ -5,7 +5,8 @@ from rclpy.duration import Duration
 from rclpy.qos import QoSProfile, DurabilityPolicy, ReliabilityPolicy
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from std_msgs.msg import String
-from sensor_msgs.msg import Joy                    # for joystick subscription
+# from sensor_msgs.msg import Joy                    # for joystick subscription
+from spider_capstone_msgs.msg import Control             # new joystick controller
 from sensor_msgs.msg import JointState             # grab leg current place
 from control_msgs.srv import QueryTrajectoryState  # for  jtc feedback
 
@@ -48,12 +49,20 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
             qos_profile                                # just runs (ignore but still needed)
         )
         ## subscribe to the joy node:
-        self.joy_subscription_ = self.create_subscription(
-            Joy,     # I think its an array?
-            '/joy',
-            self.read_joystick,
-            10    # how many messages can be sent at once for a topic?
+        # self.joy_subscription_ = self.create_subscription(
+        #     Joy,     # I think its an array?
+        #     '/joy',
+        #     self.read_joystick,
+        #     10    # how many messages can be sent at once for a topic?
+        # )
+
+
+        ## subscribe to custom Joy Controller
+        self.control_sub = self.create_subscription(
+            Control, '/spider_control', self.control_callback, 
+            10
         )
+
         ## subscribe to leg joinyt trajectory controllers (for clean state transition)
         self.joint_state_sub = self.create_subscription(
             JointState, '/joint_states', self.joint_state_callback, 
@@ -89,16 +98,21 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
         #self.timer_ = self.create_timer(self.duration_step*20, self.publish_trajectory)
         self.get_logger().info('Joint trajectory publisher started!')                   # try number of points?
 
-        self.walk_array_dict = {"Strafe Front":self.create_angle_array(0), #creates the path in multiple directions in a dictionary
-                                "Strafe Back":self.create_angle_array(np.pi),
-                                "Strafe Left":self.create_angle_array(np.pi*0.5),
-                                "Strafe Right":self.create_angle_array(np.pi*-0.5),
-                                "Strafe FrontLeft":self.create_angle_array(np.pi*0.25),
-                                "Strafe FrontRight":self.create_angle_array(np.pi*-0.25),
-                                "Strafe BackLeft":self.create_angle_array(np.pi*0.75),
-                                "Strafe BackRight":self.create_angle_array(np.pi*-0.75),
+        self.walk_array_dict = {"Strafe Front":self.create_angle_array(0,0), #creates the path in multiple directions in a dictionary
+                                "Strafe Back":self.create_angle_array(np.pi,0),
+                                "Strafe Left":self.create_angle_array(np.pi*0.5,0),
+                                "Strafe Right":self.create_angle_array(np.pi*-0.5,0),
+                                "Strafe FrontLeft":self.create_angle_array(np.pi*0.25,0),
+                                "Strafe FrontRight":self.create_angle_array(np.pi*-0.25,0),
+                                "Strafe BackLeft":self.create_angle_array(np.pi*0.75,0),
+                                "Strafe BackRight":self.create_angle_array(np.pi*-0.75,0),
                                 "STOP":{1:[[0,0,0],[0,0,0]], 2:[[0,0,0],[0,0,0]],3:[[0,0,0],[0,0,0]],4:[[0,0,0],[0,0,0]]}}
+                                "Rotate ClockWise":self.create_angle_array(0,-1),
+                                "Rotate Counter-ClockWise":self.create_angle_array(0,1),
         self.strafe_direction = "Strafe Front" # initial walking direction
+
+        self.chains = {}
+        self.chain_names = {}
 
     def urdf_callback(self, msg: JointTrajectory): #extracts names of joints from urdf tree.
         '''
@@ -113,8 +127,7 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
             tip_link = 'fr_end_effector'
             tip_link = ['fr_end_effector', 'fl_end_effector', 'bl_end_effector', 'br_end_effector']
 
-            self.chains = {}
-            self.chain_names = {}
+
 
             for i in range(0,4):
                 chain = self.tree.getChain(base_link, tip_link[i])
@@ -137,8 +150,8 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
         except Exception as e:
             self.get_logger().error(f"Failed to setup KDL: {str(e)}")
 
-    def create_angle_array(self,ang_direction):
-        [FL,FR,BL,BR] = walking_cycle(ang_direction) #create point loop with correct offset for each leg
+    def create_angle_array(self,ang_direction,spin):
+        [FL,FR,BL,BR] = walking_cycle(ang_direction,spin) #create point loop with correct offset for each leg
 
         # Pull the points from the walking cycle #
         Points_FL = FL[0:3,:].T  # I believe this this strips off the extra 1?
@@ -211,58 +224,110 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
         print('AAAAAAAAAAAAAAAAAAAAAAA')
         print(response)
 
-    def read_joystick(self, msg): # axes is defined in msg for joy subscriber,
-        if msg.buttons[0] == 1 and self.debug_button_pressed == False: # the "testing things" button
-            self.debug_button_pressed = True
-            print("debug button pressed")
-            self.transition_trajectory() # begin transitioning to next state
-            self.request_current_state() # DEBUG -- seeing if transition_trajectory is using the right points
-        elif msg.buttons[0] == 0 and self.debug_button_pressed == True:
-            self.debug_button_pressed = False
-            print("debug button released")
+    def control_callback(self, msg):
+        # matching chunk
+        if self.prevDirect != msg.direction:
+            self.prevDirect = msg.direction
+            self.try_catch_from_hell() ## stop the legs as direction is about to change
+            match msg.direction:
+                case Control.IDLE:
+                    self.strafe_direction = "STOP"
+                case Control.NORTH:
+                    self.strafe_direction = "Strafe Front"
+                case Control.NORTHWEST:
+                    self.strafe_direction = "Strafe FrontLeft"
+                case Control.WEST:
+                    self.strafe_direction = "Strafe Left"
+                case Control.SOUTHWEST:
+                    self.strafe_direction = "Strafe BackLeft"
+                case Control.SOUTH:
+                    self.strafe_direction = "Strafe Back"
+                case Control.SOUTHEAST:
+                    self.strafe_direction = "Strafe BackRight"
+                case Control.EAST:
+                    self.strafe_direction = "Strafe Right"
+                case Control.NORTHEAST:
+                    self.strafe_direction = "Strafe FrontRight"
+                case Control.ROTCW:
+                    self.strafe_direction = "Rotate ClockWise"
+                case Control.ROTCCW:
+                    self.strafe_direction = "Rotate Counter-ClockWise"
+                case Control.ERROR1:
+                    print("Error 1 recieved by ActionSteppy control")
+                case Control.ERROR2:
+                    print("Error 2 recieved by ActionSteppy control")
+                case _:
+                    print('\033[91m' + "something REALLY failed" + '\033[0m')
+            self.publish_trajectory(True) # move the legs, TRUE so the function knows not to jump
 
-        joy_mag      = np.sqrt(msg.axes[1]**2 + msg.axes[0]**2)
-        if joy_mag > 0.8:
-            joy_left_ang = np.arctan2(msg.axes[0],msg.axes[1]) + np.pi #the pi makes it go from 0->2pi
-            #print(f'{joy_left_ang} mag: {joy_mag}')
-        # think in 8 chunks?
-            if joy_left_ang >= 5.75:
-                self.strafe_direction = "Strafe Back"
-            elif joy_left_ang >= 5.2:
-                self.strafe_direction = "Strafe BackLeft"
-            elif joy_left_ang >= 4.2:
-                self.strafe_direction = "Strafe Left"
-            elif joy_left_ang >= 3.65:
-                self.strafe_direction = "Strafe FrontLeft"
-            elif joy_left_ang >= 2.6:
-                self.strafe_direction = "Strafe Front"
-            elif joy_left_ang >= 2.1:
-                self.strafe_direction = "Strafe FrontRight"
-            elif joy_left_ang >= 1.1: 
-                self.strafe_direction = "Strafe Right"
-            elif joy_left_ang >= 0.5:
-                self.strafe_direction = "Strafe BackRight"
-            elif joy_left_ang >= 0.0:
-                self.strafe_direction = "Strafe Back" # could have put in else,
-            else:
-                print("a joystick direction error, somehow") # should be mathmatically impossible to get here
 
-            if self.prevDirect != self.strafe_direction: # only print this on change
-                self.prevDirect = self.strafe_direction
-                print('\033[32m' + f'set direc to: {self.strafe_direction}' + '\033[0m')
-                self.try_catch_from_hell() # stop legs current goal
-                #self.publish_trajectory() # Basically "update on change" IDEA, INSTEAD OF UPDATE, TRANSITION -> UPDATE!!
-                self.transition_trajectory()
 
-        else: #joystick is not pushed, robot should stop
-            if self.current_point != [] and self.strafe_direction != "STOP":
-                self.strafe_direction = "STOP" # NOTE as of 4/1/2026 this state should NEVER be published to JCTs, just used in logic.
-                self.prevDirect = self.strafe_direction
-                print('\033[91m' + 'STOPPING STATE' + '\033[0m')
-                self.try_catch_from_hell() # stops the legs from walking. "pause".
-                #self.publish_trajectory()
-                #self.request_current_state() # for "resquest current state" testing. unused as of 4/6/2026 
-                #self.transition_trajectory() # begin transition to next state
+        # self.strafe_direction = msg.direction # update set direction
+        # if self.prevDirect != self.strafe_direction: # only go if desired direction changes
+        #     if self.strafe_direction != "STOP":
+        #         self.prevDirect = self.strafe_direction
+        #         print('\033[32m' + f'set direc to: {self.strafe_direction}' + '\033[0m')
+        #         self.try_catch_from_hell() # stop legs current goal
+        #         self.publish_trajectory(True) # Basically "update on change" IDEA, INSTEAD OF UPDATE, TRANSITION -> UPDATE!!
+        #     else: 
+        #         self.strafe_direction = "STOP" # NOTE as of 4/1/2026 this state should NEVER be published to JCTs, just used in logic.
+        #         self.prevDirect = self.strafe_direction
+        #         print('\033[91m' + 'STOPPING STATE' + '\033[0m')
+        #         self.try_catch_from_hell() # stops the legs from walking. "pause".  
+
+
+    # def read_joystick(self, msg): # axes is defined in msg for joy subscriber,
+    #     if msg.buttons[0] == 1 and self.debug_button_pressed == False: # the "testing things" button
+    #         self.debug_button_pressed = True
+    #         print("debug button pressed")
+    #         self.transition_trajectory() # begin transitioning to next state
+    #         self.request_current_state() # DEBUG -- seeing if transition_trajectory is using the right points
+    #     elif msg.buttons[0] == 0 and self.debug_button_pressed == True:
+    #         self.debug_button_pressed = False
+    #         print("debug button released")
+
+    #     joy_mag      = np.sqrt(msg.axes[1]**2 + msg.axes[0]**2)
+    #     if joy_mag > 0.8:
+    #         joy_left_ang = np.arctan2(msg.axes[0],msg.axes[1]) + np.pi #the pi makes it go from 0->2pi
+    #         #print(f'{joy_left_ang} mag: {joy_mag}')
+    #     # think in 8 chunks?
+    #         if joy_left_ang >= 5.75:
+    #             self.strafe_direction = "Strafe Back"
+    #         elif joy_left_ang >= 5.2:
+    #             self.strafe_direction = "Strafe BackLeft"
+    #         elif joy_left_ang >= 4.2:
+    #             self.strafe_direction = "Strafe Left"
+    #         elif joy_left_ang >= 3.65:
+    #             self.strafe_direction = "Strafe FrontLeft"
+    #         elif joy_left_ang >= 2.6:
+    #             self.strafe_direction = "Strafe Front"
+    #         elif joy_left_ang >= 2.1:
+    #             self.strafe_direction = "Strafe FrontRight"
+    #         elif joy_left_ang >= 1.1: 
+    #             self.strafe_direction = "Strafe Right"
+    #         elif joy_left_ang >= 0.5:
+    #             self.strafe_direction = "Strafe BackRight"
+    #         elif joy_left_ang >= 0.0:
+    #             self.strafe_direction = "Strafe Back" # could have put in else,
+    #         else:
+    #             print("a joystick direction error, somehow") # should be mathmatically impossible to get here
+
+    #         if self.prevDirect != self.strafe_direction: # only print this on change
+    #             self.prevDirect = self.strafe_direction
+    #             print('\033[32m' + f'set direc to: {self.strafe_direction}' + '\033[0m')
+    #             self.try_catch_from_hell() # stop legs current goal
+    #             self.publish_trajectory(True) # Basically "update on change" IDEA, INSTEAD OF UPDATE, TRANSITION -> UPDATE!!
+    #             #self.transition_trajectory()
+
+        # else: #joystick is not pushed, robot should stop
+        #     if self.current_point != [] and self.strafe_direction != "STOP":
+        #         self.strafe_direction = "STOP" # NOTE as of 4/1/2026 this state should NEVER be published to JCTs, just used in logic.
+        #         self.prevDirect = self.strafe_direction
+        #         print('\033[91m' + 'STOPPING STATE' + '\033[0m')
+        #         self.try_catch_from_hell() # stops the legs from walking. "pause".
+        #         #self.publish_trajectory()
+        #         #self.request_current_state() # for "resquest current state" testing. unused as of 4/6/2026 
+        #         #self.transition_trajectory() # begin transition to next state
                 
 
     def joint_state_callback(self, msg: JointState): # INTERESTING gives message of all 4 leg positions with timestamp
@@ -273,30 +338,16 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
         #self.transition_trajectory(msg)
 
 
-    # def send_pathgoals(self):
-    #     goal_FR_msg = FollowJointTrajectory.Goal() #creates an instance goal object for a generic FollowJointTrajectory action
-    #                                                # does not know anthing, think of as blank clipboard
-    #     point =  JointTrajectoryPoint()# the goal clipboard will need a list of points, we shal create a generic "point" object
-    #     point.positions = [.4,.4,.4] 
-    #     point.time_from_start = Duration(seconds=10, nanoseconds=0).to_msg() # time stamp for single point
-
-    #     goal_FR_msg.trajectory.joint_names = self.chain_names[1] # tell clipboard what the joints are
-    #     goal_FR_msg.trajectory.points = [point]                  # attach point array (in order?) to clipboard 
-
-    #     #self.action_client_FR.wait_for_server() #???
-    #     self.action_client_FR.send_goal_async(goal_FR_msg) # shove this into print statement?
-    #     return 
-
-
-    def publish_trajectory(self,trans_time):
+    def publish_trajectory(self,transition_first = False):
         if not self.chains: # stops the chain error
+            print("chain error race condition occured")
             return
         # print(self.chain_names)
-        if self.strafe_direction == "STOP":
-            print("aborted erronious walk")
+        if self.strafe_direction == "STOP": #put here so stop does not attempt to walk along a non-existant path.
+            print("Skip walk because in STOP STATE")
             return # if in stop staste, dont try to walk.
 
-        self.get_logger().info('publish_trajectory') # send logger message (shows up in terminal for debugging)
+        #self.get_logger().info('publish_trajectory') # send logger message (shows up in terminal for debugging)
                         # logger means print to consol here
         ## Create the JointTrajectory message
         goal_FR_msg = FollowJointTrajectory.Goal()
@@ -305,16 +356,40 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
         goal_BR_msg = FollowJointTrajectory.Goal() # creates an object of jointTrajectory Message type
         self.goal_msgs = {1: goal_FR_msg, 2: goal_FL_msg, 3: goal_BL_msg, 4: goal_BR_msg} #array became disctonary :D
         
-        # for i in goal_msgs: # honest no clue whatthis is for, does not crash if I comment it out.
-        #     goal_msgs[i].header.stamp = self.get_clock().now().to_msg() # timestamps message
-        #     goal_msgs[i].header.frame_id = 'base_link' # its an id, has to be here
 
         ## Append points to trajectory
         print(f'walking with: -{self.strafe_direction}- point array')
+        first_points = [9999,9999,9999,9999] # creates 4 slots to be overwritten
         for j in range(1, 4+1):
-            point_duration = trans_time # how long a step takes, trans_time gives time for the transition to complete
+            point_duration = 0.0 # how long a step takes
             #msg.points = [] # resets points so messages dont contaminate each other
+
             first_pt = self.walk_array_dict[self.strafe_direction][j][0]
+            if transition_first == True:  ## NOTE important for transitions. merged here because separate function caused issues
+                first_points[j-1] = self.walk_array_dict[self.strafe_direction][j][0] # grab first point of each leg's walk path
+                # reset point (overwrites last action in jtc if one is there) (not sure if thats how jtc works with 0.0 pts?)
+                point = JointTrajectoryPoint()  ## note/\ every other array index starts at 1 (why?), the j-1 is because point_4leg_array starts at 0
+                point.positions = [self.current_point.position[10], self.current_point.position[11], self.current_point.position[9]]
+                point.time_from_start = Duration(seconds=0.1).to_msg() # logic says this should be 0, 1 works though???
+                self.goal_msgs[j].trajectory.points.append(point) 
+                
+                # raise up in the air to not drag
+                point = JointTrajectoryPoint()  ## note/\ every other array index starts at 1 (why?), the j-1 is because point_4leg_array starts at 0
+                point.positions = np.array(first_points[j-1]) + np.array([0, -0.1, 0.1]) # just raises into air slightly
+                #print(point.positions)
+                point.time_from_start = Duration(seconds=1).to_msg() #adds how much time it takes to get to point.
+                self.goal_msgs[j].trajectory.points.append(point)
+
+                # go to start point of next cycle
+                point = JointTrajectoryPoint()  ## note/\ every other array index starts at 1 (why?), the j-1 is because point_4leg_array starts at 0
+                point.positions = first_points[j-1]
+                point.time_from_start = Duration(seconds=1.5).to_msg() #adds how much time it takes to get to point.
+                self.goal_msgs[j].trajectory.points.append(point)
+                #self.goal_msgs[j].trajectory.joint_names = self.chain_names[j] # finally attach chain names
+                point_duration = 1.51 #+ (j/2)  ## NOTE j is supposed to stagger the legs so the robot does not trip
+                ### /\ gives time for transition to happen 
+                ## NOTE NOTE NOTE  IF THE SAME POINT_DURATION IS USED TWICE IT FREEZES WITHOUT THROWING AN ERROR!!!!!
+            
             for points in self.walk_array_dict[self.strafe_direction][j]: #point_array: # only runs once, part of set up. (packages each point for message sendoff)
                 point = JointTrajectoryPoint()  ## note/\ every other array index starts at 1 (why?), the j-1 is because point_4leg_array starts at 0
                 point.positions = points
@@ -331,6 +406,7 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
             self.goal_msgs[j].trajectory.joint_names = self.chain_names[j] # for like angle 1 gets asssigned to joint *_sholder and such.
             #self.jtc_publishers[j].publish(msg[j]) # what sends out the message neil added i here.
             #self.get_logger().info(f'Published joint trajectory to controller {j}. Points: {len(goal_msgs[j].trajectory.points)}')
+        print('points should be sent out here')
         future_FR = self.jtc_Action_Publishers[1].send_goal_async(self.goal_msgs[1])  ## this sends goal and creates a response variable
         future_FL = self.jtc_Action_Publishers[2].send_goal_async(self.goal_msgs[2])
         future_BL = self.jtc_Action_Publishers[3].send_goal_async(self.goal_msgs[3])
@@ -345,13 +421,14 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
     def transition_trajectory(self): # basically publish_trajectory() but with custom points to transition between states
         #self.get_logger().info('publish_transition_trajectory') # send logger message (shows up in terminal for debugging)
         #print("BEGIN TRANSITION")
+        crash.now
         goal_FR_msg = FollowJointTrajectory.Goal() # creates an object of jointTrajectory Message type
         goal_FL_msg = FollowJointTrajectory.Goal() 
         goal_BL_msg = FollowJointTrajectory.Goal()
         goal_BR_msg = FollowJointTrajectory.Goal() 
         self.goal_msgs = {1: goal_FR_msg, 2: goal_FL_msg, 3: goal_BL_msg, 4: goal_BR_msg} #array became disctonary :D
  
-        first_points = [9999,9999,9999,9999] # creates 4 slots to be overwritten
+        
         for j in range(1, 4+1): # prep the end of the transition
             point_duration = 3.0 # 3 angles, duragtion. This tells how long travel time should take. (we guess this)
             #msg.points = [] # resets points so messages dont contaminate each other
@@ -426,7 +503,6 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
         self.goal_handle_BR = goal_handle
 
 
-
     def on_step_finish_callback(self, future):  # ACTIVATES WHEN ACTION just FINISHED
         #print("action completed??")
         # #print(f'Completed goal? {future.status}')
@@ -443,7 +519,7 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
         if self.walk_again_counter >= 4: # if all 4 legs finished walking, walk again.
             print(f'step again! counter = {self.walk_again_counter}')
             self.walk_again_counter = 0
-            self.publish_trajectory(0)
+            self.publish_trajectory()
 
 
 
@@ -456,7 +532,6 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
         #     print(f'how heck did it get {self.finished_actions}?')
         # else: # counts the legs, seriously WHY DO GOAL/FUTURE OBJECTS LACK NAME IDENTIFIRES, NO THE ID VALUE IS INSTANCE UNIQUE
         #     print(f'counting, {self.finished_actions}')
-
 
 
 # GENERIC FUNCTIONS  (not part of class but may be used by instances)

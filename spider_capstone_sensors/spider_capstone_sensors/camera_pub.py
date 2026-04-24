@@ -45,7 +45,9 @@ class CameraNode(Node):
 
         # Switch the image into an HSV image for color detection #
         HSV_img = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
-        Mask_img = cv2.inRange(HSV_img, (130,100,80),(180, 255, 255))
+        mask_img1 = cv2.inRange(HSV_img, (0, 150, 30), (20, 255, 255) )
+        mask_img2 = cv2.inRange(HSV_img, (160,100,80),(180, 255, 255) )
+        Mask_img = cv2.bitwise_or(mask_img1, mask_img2)
         Blur_img = cv2.blur(Mask_img,(5,5))
 
         thresh = cv2.threshold(Blur_img, 200,255,cv2.THRESH_BINARY)[1]

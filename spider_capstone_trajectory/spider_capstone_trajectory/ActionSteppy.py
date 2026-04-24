@@ -17,7 +17,7 @@ import kdl_wrapper as kdl # ?
 # functions:
 from .Inverse_Kinematics import inverse_kinematic_FR, inverse_kinematic_FL, inverse_kinematic_RL, inverse_kinematic_RR
 from .Rotations import walking_cycle # creates walking cycle
-
+from .Rotations import spining_cycle # creates rotate-in-place cycle
 
 # import action:
 from control_msgs.action import FollowJointTrajectory
@@ -172,6 +172,9 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
             point_array_BL.append(theta_BL)
             point_array_BR.append(theta_BR)
         return {1: point_array_FR, 2: point_array_FL, 3: point_array_BL, 4: point_array_BR}
+    
+    def create_spin_angle_array(self,spin_direction):
+        [FL,FR,BL,BR] = walking_cycle(ang_direction) #create point loop with correct offset for each leg
 
     def try_catch_from_hell(self): # attemp to handle goals from all 4 legs
             try:
