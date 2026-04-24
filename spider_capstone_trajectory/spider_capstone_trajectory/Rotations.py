@@ -128,7 +128,7 @@ def walking_cycle(gamma,spin): ## NOTE: if -1 spin cw and ignore gamma, if 0 use
     
 
     # A = Parabolic Height maximum #
-    A = 2
+    A = 4#2
 
     # T = Walking Line length #
     T = 6
@@ -175,10 +175,18 @@ def walking_cycle(gamma,spin): ## NOTE: if -1 spin cw and ignore gamma, if 0 use
     Y_offset = 6
     z_offset = 5 #subtracted from z
 
-    if spin == 0:    
+    if spin == 0:
+        x_offset = 6 #added
+        Y_offset = 6    
         Rot_Front_Right = np.array([[np.cos(gamma), -np.sin(gamma),0,7.965677269102155+x_offset],[np.sin(gamma), np.cos(gamma),0,-7.273934903508881-Y_offset],[0,0,1,-7.6327774131716355-z_offset],[0,0,0,1]])
+        x_offset = 6 #added
+        Y_offset = 6
         Rot_Front_Left = np.array([[np.cos(gamma), -np.sin( gamma), 0, 7.965677269102155+x_offset],[np.sin(gamma),np.cos(gamma),0,7.273934903508881+Y_offset],[0,0,1,-7.6327774131716355-z_offset],[0,0,0,1]])
+        x_offset = 6 #added
+        Y_offset = 6        
         Rot_Rear_Left = np.array([[np.cos(gamma), -np.sin( gamma), 0, -7.965677269102155-x_offset],[np.sin(gamma), np.cos(gamma),0,7.273934903508881+Y_offset],[0,0,1,-7.6327774131716355-z_offset],[0,0,0,1]])
+        x_offset = 6 #added
+        Y_offset = 6       
         Rot_Rear_Right = np.array([[np.cos(gamma), -np.sin(gamma), 0, -7.965677269102155-x_offset],[np.sin(gamma), np.cos(gamma),0,-7.273934903508881-Y_offset],[0,0,1,-7.6327774131716355-z_offset],[0,0,0,1]])
     else: # idea is that by multiplying by 1/-1 (spin) we can set the rotation direction
         Rot_Front_Right = np.array([[np.cos(spin*np.pi/4), -np.sin(spin*np.pi/4),0,7.965677269102155+x_offset],[np.sin(np.pi/4), np.cos(np.pi/4),0,-7.273934903508881-Y_offset],[0,0,1,-7.6327774131716355-z_offset],[0,0,0,1]])

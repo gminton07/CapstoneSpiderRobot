@@ -17,25 +17,28 @@ class CameraNode(Node):
                10
         )
 
-        DURATION = 0.5
+        DURATION = 0.1
         self.timer = self.create_timer(
                 DURATION,
                 self.timer_callback
         )
 
-        self.cap = Capture_Image()
+        self.cap = cv2.VideoCapture('/dev/video0',cv2.CAP_V4L)
         # TODO: Set height and width for self.cap
 
 
     def timer_callback(self):
-        frame = self.cap
+        ret,frame = self.cap.read()
 
+        if not ret:
+            self.get_logger().debug('No Image')
+            return
         heading_angle=self.image_process(frame)
 
         ### ADDED HERE ###
         msg = String()
         msg.data = str(heading_angle)
-        self.get_logger().info(f'sending heading angle {msg.data}')
+        self.get_logger().debug(f'sending heading angle {msg.data}')
         self.cam_pub.publish(msg)
         ### ADDED HERE ###
 

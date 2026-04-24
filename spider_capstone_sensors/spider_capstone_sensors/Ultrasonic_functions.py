@@ -22,6 +22,8 @@ def Distance_Read(Read,Trigger): # This is for setting the pin layout #
     GPIO.output(Trigger,True)
     time.sleep(.00001) # Sendout one pulse #
     GPIO.output(Trigger,False)
+    start_time = time.time()
+    end_time = time.time()
 
     # Check when the read in pin detects the ultrasonic reflection #
     while GPIO.input(Read) == False:
@@ -43,5 +45,6 @@ def Distance_Read(Read,Trigger): # This is for setting the pin layout #
     # Read the calculated distance #
     Distance_meters = (V_temp  * delta_T)/2
     Distance_inches = Distance_meters * 39.37
-
+    if Distance_inches > 100:
+        Distance_inches = 100
     return Distance_meters, Distance_inches

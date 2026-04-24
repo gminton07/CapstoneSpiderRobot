@@ -6,16 +6,19 @@ import subprocess
 
 def Capture_Image(row = '1640', column = '1232'):
      # Create the command to take a video frame #
-     command = ['rpicam-vid','-t','1','--frames','1','--width', str(column),'--height', str(row),'--codec','mjpeg','-o','-','-n']
+#     command = ['rpicam-vid','-t','1','--frames','1','--width', str(column),'--height', str(row),'--codec','mjpeg','-o','-','-n']
      # Run the subprocess to allow the command #
-     pic = subprocess.run(command,capture_output=True, check=True)
-     img_byte = pic.stdout # Send the bits out #
+    #  pic = subprocess.run(command,capture_output=True, check=True)
+    #  img_byte = pic.stdout # Send the bits out #
 
-     nparr = np.frombuffer(img_byte,np.uint8) # the format of the decoder #
+    #  nparr = np.frombuffer(img_byte,np.uint8) # the format of the decoder #
      # Create the decoded image #
-     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    #  img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-     return img
+    ret, img = cam.read()
+
+
+    return img
 
 def Camera(resolution=(1640, 1230), HSV_lim = (150, 180) , debug = False, debug_img = False, ApertureSize = 3, Gradient = (50,80), take_img=False):
     

@@ -78,7 +78,6 @@ def generate_launch_description():
             Node(
                 package='controller_manager',
                 executable='ros2_control_node',
-                name='controller_manager',
                 parameters=[robot_desc_param, controllers_yaml]
             ),
 
@@ -131,12 +130,12 @@ def generate_launch_description():
             ),
             Node(
                 package='spider_capstone_sensors',
-                executable='auto_controller'
+                executable='Ultrasonic_node'
             ),
             Node(
                 package='spider_capstone_sensors',
-                executable='Ultrasonic_node'
-            )
+                executable='auto_controller'
+            ),
         ]
     )
 

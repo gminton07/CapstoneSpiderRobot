@@ -20,7 +20,7 @@ class Ultrasonic(Node):
                 10
         )
 
-        DURATION = 0.5
+        DURATION = 0.1
         self.timer_ = self.create_timer(
                 DURATION,
                 self.timer_callback
@@ -30,18 +30,20 @@ class Ultrasonic(Node):
         self.pin1 = 17 # Read in pin (Echo) #
         self.pin2 = 27 # Output pin (Trigger) #
         self.initialize_ult = Initialize_Ult(self.pin1, self.pin2)
-        self.distance = Distance_Read(self.pin1, self.pin2)
 
     def timer_callback(self):
         # input pins as arguments for pin1 and pin2 (trig, echo) #
-        self.initialize_ult(self.pin1, self.pin2)
-        distance = self.distance(self.pin1, self.pin2)
+#        self.initialize_ult()
+#        distance = self.distance(self.pin1, self.pin2)
+        distance_meters, distance_inches = Distance_Read(self.pin1, self.pin2)
 
         ### ADDED HERE ###
-        msg = String
-        msg.data = distance
+        msg = String()
+        msg.data = str(distance_inches)
+        self.get_logger().debug(f'Distance Read: {distance_inches}')
         self.Ultrasonic_pub.publish(msg)
         ### ADDED HERE ###
+
         
     
 def main():

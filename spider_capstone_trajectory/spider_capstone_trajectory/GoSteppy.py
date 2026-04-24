@@ -46,7 +46,8 @@ class GoSteppy(Node): # nodes are class objects, what defines it
             self.urdf_callback,                        # function to run when you recieve message
             qos_profile                                # just runs (ignore but still needed)
         )
-
+        self.chains = {}
+        self.chain_names = {}
         # ## subscribe to the joy node:
         # self.joy_subscription_ = self.create_subscription(
         #     Joy,     # I think its an array?
@@ -193,7 +194,7 @@ class GoSteppy(Node): # nodes are class objects, what defines it
 
 
     def create_angle_array(self,ang_direction):
-        [FL,FR,BL,BR] = walking_cycle(ang_direction) #create point loop with correct offset for each leg
+        [FL,FR,BL,BR] = walking_cycle(ang_direction,0) #create point loop with correct offset for each leg
 
         # Pull the points from the walking cycle #
         Points_FL = FL[0:3,:].T  # I believe this this strips off the extra 1?
@@ -207,10 +208,16 @@ class GoSteppy(Node): # nodes are class objects, what defines it
         point_array_BL = []
         point_array_BR = []
         for i in range(total_pts):
-            theta_FL = inverse_kinematic_FL(Points_FL[(15 + i) % total_pts,:]) 
+            theta_FL = inverse_kinematic_FL(Points_FL[(15 + i) % total_pts,:]) # Theta is 3 angles
             theta_FR = inverse_kinematic_FR(Points_FR[(5 + i) % total_pts,:])
             theta_BL = inverse_kinematic_RL(Points_BL[(10 + i) % total_pts,:])
             theta_BR = inverse_kinematic_RR(Points_BR[(0 + i) % total_pts,:])
+            #### EXPERIMENTAL ANGLE INJECTION
+            # theta_FL = [theta_FL[0], theta_FL[1]+np.deg2rad(40), theta_FL[2]+np.deg2rad(-40)]
+            # theta_FR = [theta_FR[0], theta_FR[1]+np.deg2rad(40), theta_FR[2]+np.deg2rad(-40)]
+            # theta_BL = [theta_BL[0], theta_BL[1]+np.deg2rad(40), theta_BL[2]+np.deg2rad(-40)]
+            # theta_BR = [theta_BR[0], theta_BR[1]+np.deg2rad(40), theta_BR[2]+np.deg2rad(-40)]
+            ## add point to arrays
             point_array_FL.append(theta_FL)
             point_array_FR.append(theta_FR)
             point_array_BL.append(theta_BL)

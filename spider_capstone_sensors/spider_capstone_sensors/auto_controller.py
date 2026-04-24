@@ -67,7 +67,7 @@ class AutoControl(Node):
         )
 
         # Create timer
-        TIMER_PERIOD = 0.5
+        TIMER_PERIOD = 0.2
         self.timer_ = self.create_timer(
             TIMER_PERIOD,
             self.timer_cb
@@ -79,35 +79,42 @@ class AutoControl(Node):
         self.magnetic = msg.magnetic
 
     def camera_cb(self, msg):
-        self.camera_msg_data = msg.data
-        self.get_logger().info(self.camera_msg_data)
+        self.camera_msg_data = float(msg.data)
 
     def ultra_cb(self, msg):
-        self.distance = msg.data
+        self.distance = float(msg.data)
 
     def timer_cb(self):
-        # TODO: Algorithm taking in IMU and camera and ultrasonic data
-        # and giving an output
-        
         # Break if messages not received yet
-        if not (self.acceleration and self.camera_msg_data and self.distance):
+        '''
+        if (not self.acceleration) or (not self.camera_msg_data) or (not self.distance):
             return None
+        '''
         
         msg = Control()
 
+        # Check ultrasonic distance
+        if not self.distance:
+            return
         MIN_DIST = 10   # Minimum distance before stopping
         if self.distance < MIN_DIST:
             msg.stop = True
+            self.control_pub.publish(msg)
+            self.get_logger().info(f'Control message: {msg.direction=} {msg.stop=}') 
+            return # should stop the exit this logic chain
 
-        
-        ### PSEUDOCODE: ###
-        if self.camera_msg_data < 0:    # Turn LEFT?
-            msg.direction = Direction.ROTCCW
-        elif self.camera_msg_data > 0:
-            msg.direction = Direction.ROTCW 
-        ### PSEUDOCODE ###
-
+        # Check camera angles
+        if not self.camera_msg_data:
+            return
+        if self.camera_msg_data < -15:    # Turn LEFT?
+            msg.direction = Direction.ROTCW
+        elif self.camera_msg_data > 15:
+            msg.direction = Direction.ROTCCW 
+        else: 
+            msg.direction = Direction.FRONT
+        # -90 to 90 deg?
         self.control_pub.publish(msg)
+        self.get_logger().info(f'Control message: {msg.direction=} {msg.stop=}') 
 
 
 def main():

@@ -19,7 +19,7 @@ class IcmNode(Node):
                 10
         )
 
-        DURATION = 0.5
+        DURATION = 0.1
         self.timer_ = self.create_timer(
                 DURATION,
                 self.timer_callback
@@ -51,7 +51,7 @@ class IcmNode(Node):
         msg.magnetic.x = mag[2]
 
         self.icm_pub.publish(msg)
-        self.get_logger().info('ICM data published')
+        self.get_logger().debug('ICM data published')
 
     
 def main():

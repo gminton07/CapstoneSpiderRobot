@@ -98,14 +98,16 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
         #self.timer_ = self.create_timer(self.duration_step*20, self.publish_trajectory)
         self.get_logger().info('Joint trajectory publisher started!')                   # try number of points?
 
-        self.walk_array_dict = {"Strafe Front":self.create_angle_array(0), #creates the path in multiple directions in a dictionary
-                                "Strafe Back":self.create_angle_array(np.pi),
-                                "Strafe Left":self.create_angle_array(np.pi*0.5),
-                                "Strafe Right":self.create_angle_array(np.pi*-0.5),
-                                "Strafe FrontLeft":self.create_angle_array(np.pi*0.25),
-                                "Strafe FrontRight":self.create_angle_array(np.pi*-0.25),
-                                "Strafe BackLeft":self.create_angle_array(np.pi*0.75),
-                                "Strafe BackRight":self.create_angle_array(np.pi*-0.75),
+        self.walk_array_dict = {"Strafe Front":self.create_angle_array(0,0), #creates the path in multiple directions in a dictionary
+                                "Strafe Back":self.create_angle_array(np.pi,0),
+                                "Strafe Left":self.create_angle_array(np.pi*0.5,0),
+                                "Strafe Right":self.create_angle_array(np.pi*-0.5,0),
+                                "Strafe FrontLeft":self.create_angle_array(np.pi*0.25,0),
+                                "Strafe FrontRight":self.create_angle_array(np.pi*-0.25,0),
+                                "Strafe BackLeft":self.create_angle_array(np.pi*0.75,0),
+                                "Strafe BackRight":self.create_angle_array(np.pi*-0.75,0),
+                                "Strafe Counter-ClockWise":self.create_angle_array(0,-1),
+                                "Strafe ClockWise":self.create_angle_array(0,1),
                                 "STOP":{1:[[0,0,0],[0,0,0]], 2:[[0,0,0],[0,0,0]],3:[[0,0,0],[0,0,0]],4:[[0,0,0],[0,0,0]]}}
         self.strafe_direction = "Strafe Front" # initial walking direction
 
@@ -148,8 +150,8 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
         except Exception as e:
             self.get_logger().error(f"Failed to setup KDL: {str(e)}")
 
-    def create_angle_array(self,ang_direction):
-        [FL,FR,BL,BR] = walking_cycle(ang_direction) #create point loop with correct offset for each leg
+    def create_angle_array(self,ang_direction,spin):
+        [FL,FR,BL,BR] = walking_cycle(ang_direction,spin) #create point loop with correct offset for each leg
 
         # Pull the points from the walking cycle #
         Points_FL = FL[0:3,:].T  # I believe this this strips off the extra 1?
@@ -250,9 +252,9 @@ class ActionSteppy(Node): # nodes are class objects, what defines it
                 case Control.NORTHEAST:
                     self.strafe_direction = "Strafe FrontRight"
                 case Control.ROTCW:
-                    print("cw rotation currently not supported")
+                    self.strafe_direction = "Strafe ClockWise"
                 case Control.ROTCCW:
-                    print("ccw rotation currently not supported")
+                    self.strafe_direction = "Strafe Counter-ClockWise"
                 case Control.ERROR1:
                     print("Error 1 recieved by ActionSteppy control")
                 case Control.ERROR2:
