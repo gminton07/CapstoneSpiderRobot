@@ -46,9 +46,14 @@ class GuiLauncher():
         tk.Checkbutton(control_frame, text="Enable Joy Group", variable=self.joy_var, command=self.toggle_joy).pack()
 
         ## Leg gait dropdown
-        self.gait_combo = ttk.Combobox(pi_frame, state='readonly', values=['ActionSteppy', 'BigSteppy'])
+        self.gait_combo = ttk.Combobox(pi_frame, state='readonly', values=['ActionSteppy', 'BigSteppy', 'GoSteppy'])
         self.gait_combo.set('ActionSteppy')
         self.gait_combo.pack()
+
+        ## SSH client dropdown
+        self.ssh_combo = ttk.Combobox(root, state='readonly', values=['gabe@ros-24.local', 'gabe@ros-24', 'neil@nbrosbox'])
+        self.ssh_combo.set('gabe@ros-24.local')
+        self.ssh_combo.pack()
 
         ## Run & Stop buttons
         butt_frame = tk.Frame(root)
@@ -75,6 +80,7 @@ class GuiLauncher():
         # Add to pi_cmd
         pi_cmd.append('core_group:=true' if self.core_var.get() else 'core_group:=false')
         pi_cmd.append('use_sensors:=true' if self.sensor_var.get() else 'use_sensors:=false')
+        pi_cmd.append(f'gait_node:={self.gait_combo.get()}')
 
          # Add to laptop_cmd
         laptop_cmd.append('use_gui:=true' if self.gui_var.get() else 'use_gui:=false')
@@ -85,11 +91,12 @@ class GuiLauncher():
         print(f'Local: {laptop_cmd = }')
 
         # Combine commands for remote ssh
-        pi_ssh = ["ssh", "-t", "neil@nbrosbox"]
-        pi_source = "source /opt/ros/jazzy/setup.bash && source /home/neil/ros2_ws/install/setup.bash"
+        self.ssh_client = self.ssh_combo.get()
+        pi_ssh = ["ssh", "-t", self.ssh_client]
+        pi_source = "source /opt/ros/jazzy/setup.bash && source /home/gabe/ros2_ws/install/setup.bash"
         pi_cmd_str = shlex.join(pi_cmd)
-        pi_gait = f"ros2 run spider_capstone_trajectory {self.gait_combo.get()}"
-        full_pi_cmd = [*pi_ssh, f"{pi_source} && {pi_cmd_str} && {pi_gait}"]
+        #pi_gait = f"ros2 run spider_capstone_trajectory {self.gait_combo.get()}"
+        full_pi_cmd = [*pi_ssh, f"{pi_source} && {pi_cmd_str}"] # && {pi_gait}"]
 
         # Launch on remote Pi
         self.remote_proc = subprocess.Popen(full_pi_cmd)
@@ -108,7 +115,7 @@ class GuiLauncher():
 
         # Stop remote process
         if self.remote_proc:
-            kill_remote_cmd = ["ssh", "neil@nbrosbox", "pkill -f 'ros2'"]
+            kill_remote_cmd = ["ssh", self.ssh_client, "pkill -f 'ros2'"]
             subprocess.run(kill_remote_cmd)
             print('Remote process terminated')
             self.remote_proc = None

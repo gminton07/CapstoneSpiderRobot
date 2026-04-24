@@ -20,6 +20,7 @@ def generate_launch_description():
     use_mock_hardware = LaunchConfiguration('use_mock_hardware')
     core_group = LaunchConfiguration('core_group') # controls Core group
     use_sensors = LaunchConfiguration('use_sensors') # Controls sensor group
+    gait_node = LaunchConfiguration('gait_node')
     
     declare_use_mock = DeclareLaunchArgument(
         'use_mock_hardware',
@@ -34,6 +35,10 @@ def generate_launch_description():
         # If false: use joy, joy_controller
         'use_sensors',
         default_value='true'
+    )
+    declare_gait_node = DeclareLaunchArgument(
+        'gait_node',
+        default_value="ActionSteppy"
     )
 
     # Config paths
@@ -135,6 +140,12 @@ def generate_launch_description():
         ]
     )
 
+    # Gait Node
+    gait_node = Node(
+        package="spider_capstone_trajectory",
+        executable=gait_node
+    )
+
     # -----------------------------
     # Launch Description
     # -----------------------------
@@ -142,6 +153,8 @@ def generate_launch_description():
         declare_use_mock,
         declare_core_group,
         declare_use_sensors,
+        declare_gait_node,
         core_group,
-        sensor_group
+        sensor_group,
+        gait_node
     ])
