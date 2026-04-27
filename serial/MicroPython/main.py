@@ -3,7 +3,7 @@
 # Version 2
 # Interface with ros2_control
 # Created: 12 Mar, 2026
-# Updated 12 Apr, 2026
+# Updated 18 Apr, 2026
 # ============================
 
 # ************************
@@ -89,9 +89,11 @@ def deactivate_servos():
         
 def move_servos(position):
     for i in range(len(position)):
-        if i in [5, 8, 11]:
-            ang = rad_to_deg(position[i])
+        ang = rad_to_deg(position[i])
+        if i in [2, 5, 8, 11]:
             servos[i].value(-ang)
+        else:
+            servos[i].value(ang)
         
 def rad_to_deg(rad: float) -> float:
     deg = rad * 180 / pi
