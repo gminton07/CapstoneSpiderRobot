@@ -17,6 +17,7 @@ rosdep install --from-paths src -y --ignore-src
 # Build workspace with symlinks
 colcon build --symlink-install
 
+## Must be run each time you open the terminal
 # Source the workspace
 source ~/ros2_ws/install/setup.bash
 
