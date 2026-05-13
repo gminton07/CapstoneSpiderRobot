@@ -49,9 +49,9 @@ namespace spider_capstone_hardware
 					const rclcpp_lifecycle::State &previous_state) override;
 
 			// Interface export methods
-			std::vector<hardware_interface::StateInterface> export_state_interfaces() override;
+			std::vector<hardware_interface::StateInterface::ConstSharedPtr> on_export_state_interfaces() override;
 
-			std::vector<hardware_interface::CommandInterface> export_command_interfaces() override;
+			std::vector<hardware_interface::CommandInterface::SharedPtr> on_export_command_interfaces() override;
 
 			// Read & Write methods
 			hardware_interface::return_type read(
@@ -71,7 +71,8 @@ namespace spider_capstone_hardware
 			// Serial communications
 			int serial_fd_ = -1;
 			std::string send_and_receive(const std::string& msg);
-	};
+
+	}; // class SpiderHardwareInterface
 
 } // namespace spider_capstone_hardware
 

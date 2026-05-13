@@ -11,7 +11,7 @@ using hardware_interface::SystemInterface;
 
 TEST(SpiderHardwareTest, LoadPlugin) {
 	// <-- Corrected to "hardware_interface"
-	pluginlib::ClassLoader<SystemInterface> loader(
+	pluginlib::ClassLoader<hardware_interface::SystemInterface> loader(
 			"hardware_interface",
 			"hardware_interface::SystemInterface");
 
@@ -23,7 +23,7 @@ TEST(SpiderHardwareTest, LoadPlugin) {
 
 TEST(SpiderHardwareTest, InitAndExportInterfaces) {
 	// <-- Corrected to "hardware_interface"
-	pluginlib::ClassLoader<SystemInterface> loader(
+	pluginlib::ClassLoader<hardware_interface::SystemInterface> loader(
 		"hardware_interface",
 		"hardware_interface::SystemInterface");
 
@@ -58,8 +58,8 @@ TEST(SpiderHardwareTest, InitAndExportInterfaces) {
 		hardware_interface::CallbackReturn::SUCCESS);
 
 	// Export interfaces
-	auto states = hw->export_state_interfaces();
-	auto commands = hw->export_command_interfaces();
+	auto states = hw->on_export_state_interfaces();
+	auto commands = hw->on_export_command_interfaces();
 
 	EXPECT_EQ(states.size(), 2);
 	EXPECT_EQ(commands.size(), 1);

@@ -176,36 +176,47 @@ namespace spider_capstone_hardware {
 	  return hardware_interface::CallbackReturn::SUCCESS;
 	}
 
-	std::vector<hardware_interface::StateInterface>
-	SpiderHardwareInterface::export_state_interfaces()
+	std::vector<hardware_interface::StateInterface::ConstSharedPtr>
+	SpiderHardwareInterface::on_export_state_interfaces()
 	{
-	  std::vector<hardware_interface::StateInterface> state_interfaces;
+	  std::vector<hardware_interface::StateInterface::ConstSharedPtr> state_interfaces;
+
+	  // state_interfaces.reserve(info_.joints.size() * 2);
 
 	  for (size_t i = 0; i < info_.joints.size(); ++i)
 	  {
-	    state_interfaces.emplace_back(
-	      hardware_interface::StateInterface(
-		info_.joints[i].name, "position", &hw_positions_[i]));
+		state_interfaces.push_back(
+			std::make_shared<hardware_interface::StateInterface>(
+				info_.joints[i].name,
+				hardware_interface::HW_IF_POSITION,
+				&hw_positions_[i]));
 
-	    state_interfaces.emplace_back(
-	      hardware_interface::StateInterface(
-		info_.joints[i].name, "velocity", &hw_velocities_[i]));
+		state_interfaces.push_back(
+			std::make_shared<hardware_interface::StateInterface>(
+				info_.joints[i].name,
+				hardware_interface::HW_IF_VELOCITY,
+				&hw_velocities_[i]));
 	  }
 
 	  return state_interfaces;
 	}
 
-	std::vector<hardware_interface::CommandInterface>
-	SpiderHardwareInterface::export_command_interfaces()
+	std::vector<hardware_interface::CommandInterface::SharedPtr>
+	SpiderHardwareInterface::on_export_command_interfaces()
 	{
-	  std::vector<hardware_interface::CommandInterface> command_interfaces;
+	  std::vector<hardware_interface::CommandInterface::SharedPtr> command_interfaces;
+
+	  // command_interfaces.reserve(info_.joints.size());
 
 	  for (size_t i = 0; i < info_.joints.size(); ++i)
 	  {
-	    command_interfaces.emplace_back(
-	      hardware_interface::CommandInterface(
-		info_.joints[i].name, "position", &hw_commands_[i]));
+		command_interfaces.push_back(
+			std::make_shared<hardware_interface::CommandInterface>(
+				info_.joints[i].name,
+				hardware_interface::HW_IF_POSITION,
+				&hw_commands_[i]));
 	  }
+
 
 	  return command_interfaces;
 	}
