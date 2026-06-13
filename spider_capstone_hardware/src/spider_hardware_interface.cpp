@@ -33,7 +33,6 @@ namespace spider_capstone_hardware {
 		size_t num_joints = info_.joints.size();
 
 		hw_positions_.resize(num_joints, 0.0);
-		hw_velocities_.resize(num_joints, 0.0);
 		hw_commands_.resize(num_joints, 0.0);
 
 		RCLCPP_INFO(rclcpp::get_logger("SpiderHardwareInterface"),
@@ -190,12 +189,6 @@ namespace spider_capstone_hardware {
 				info_.joints[i].name,
 				hardware_interface::HW_IF_POSITION,
 				&hw_positions_[i]));
-
-		state_interfaces.push_back(
-			std::make_shared<hardware_interface::StateInterface>(
-				info_.joints[i].name,
-				hardware_interface::HW_IF_VELOCITY,
-				&hw_velocities_[i]));
 	  }
 
 	  return state_interfaces;

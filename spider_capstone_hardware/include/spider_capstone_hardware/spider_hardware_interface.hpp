@@ -65,7 +65,6 @@ namespace spider_capstone_hardware
 		private:
 			// Storage vectors
 			std::vector<double> hw_positions_;
-			std::vector<double> hw_velocities_;
 			std::vector<double> hw_commands_;
 
 			// Serial communications

@@ -285,23 +285,26 @@
             <parent link="${prefix}_mg996r_seat_pin" />
             <child link="${prefix}_link_2" />
         </joint>
-        <joint name="${prefix}_hip" type="continuous">
+        <joint name="${prefix}_hip" type="revolute">
             <origin xyz="-0.0053 -0.006508 0.03408" rpy="5.37143e-25 -1.6899e-25 -4.77163e-50" />
             <axis xyz="0 0 1" />
             <parent link="${prefix}_small_servo_seat" />
             <child link="${prefix}_link_1" />
+            <limit lower="-${pi/2}" upper="${pi/2}" effort="1000" velocity="1.0"/>
         </joint>
-        <joint name="${prefix}_knee" type="continuous">
+        <joint name="${prefix}_knee" type="revolute">
             <origin xyz="5.13478e-16 3.19189e-16 0.0112682" rpy="-2.498e-15 6.80837e-17 1.01795e-16" />
             <axis xyz="-1 0 0" />
             <parent link="${prefix}_mg996r_seat" />
             <child link="${prefix}_mg996r_seat_pin" />
+            <limit lower="-${pi/2}" upper="${pi/2}" effort="1000" velocity="1.0"/>
         </joint>
-        <joint name="${prefix}_ankle" type="continuous">
+        <joint name="${prefix}_ankle" type="revolute">
             <origin xyz="0.0134 5.55112e-17 0.01915" rpy="3.55271e-15 -1.5812e-25 -6.12323e-17" />
             <axis xyz="-1 3.40103e-16 3.98986e-16" />
             <parent link="${prefix}_mg90s_body_1_solid1_1" />
             <child link="${prefix}_mg90s_top_1_solid2" />
+            <limit lower="-${pi/2}" upper="${pi/2}" effort="1000" velocity="1.0"/>
         </joint>
 
         <joint name="${prefix}_claw_2_end_effector" type="fixed">

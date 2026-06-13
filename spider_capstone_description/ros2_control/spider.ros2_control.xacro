@@ -5,11 +5,11 @@
 
     <ros2_control name="SpiderCapstoneHardwareInterface" type="system">
       
-
+      <!-- Change which hardware plugin to use -->
       <xacro:unless value="${use_mock_hardware}">
         <hardware>
           <plugin>spider_capstone_hardware/SpiderHardwareInterface</plugin>
-          <param name="calculate_dynamics">true</param>
+          <param name="calculate_dynamics">false</param>
         </hardware>
       </xacro:unless>
       <xacro:if value="${use_mock_hardware}">
@@ -19,22 +19,28 @@
         </hardware>
       </xacro:if>
 
-
+      <!-- Leg macro [Only use effort with mock system] -->
       <xacro:macro name="ros2_control" params="prefix">
         <joint name="${prefix}_hip">
           <command_interface name="position"/>
+          <xacro:if value="${use_mock_hardware}">
+            <command_interface name="effort"/>
+          </xacro:if>
           <state_interface name="position"/>
-          <state_interface name="velocity"/>
         </joint>
         <joint name="${prefix}_knee">
           <command_interface name="position"/>
+          <xacro:if value="${use_mock_hardware}">
+            <command_interface name="effort"/>
+          </xacro:if>
           <state_interface name="position"/>
-          <state_interface name="velocity"/>
         </joint>
         <joint name="${prefix}_ankle">
           <command_interface name="position"/>
+          <xacro:if value="${use_mock_hardware}">
+            <command_interface name="effort"/>
+          </xacro:if>
           <state_interface name="position"/>
-          <state_interface name="velocity"/>
         </joint>
       </xacro:macro>
 

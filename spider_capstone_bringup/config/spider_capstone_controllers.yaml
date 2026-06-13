@@ -1,6 +1,7 @@
 controller_manager:
   ros__parameters:
     update_rate: 50
+    # enforce_command_rate: true
 
     # Actual controllers
     joint_state_broadcaster:
@@ -29,7 +30,6 @@ joint_trajectory_controller_1:
       - position
     state_interfaces:
       - position
-      - velocity
 
 joint_trajectory_controller_2:
   ros__parameters:
@@ -41,7 +41,6 @@ joint_trajectory_controller_2:
       - position
     state_interfaces:
       - position
-      - velocity
 
 joint_trajectory_controller_3:
   ros__parameters:
@@ -53,7 +52,6 @@ joint_trajectory_controller_3:
       - position
     state_interfaces:
       - position
-      - velocity
 
 joint_trajectory_controller_4:
   ros__parameters:
@@ -65,4 +63,3 @@ joint_trajectory_controller_4:
       - position
     state_interfaces:
       - position
-      - velocity
