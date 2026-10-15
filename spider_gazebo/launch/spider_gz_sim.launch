@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- VARIABLES -->
+  <let name="spider_gazebo_share" value="$(find-pkg-share spider_gazebo)"/>
+
+  <!-- ARGUMENTS -->
+  <arg name="use_mock_hardware" default="false"/>
+  <arg name="model"
+    default="$(find-pkg-share spider_capstone_description)/urdf/spider_v2.urdf.xacro"/>
+  <arg name="rviz_config_path" 
+    default="$(find-pkg-share spider_capstone_description)/rviz/STL_path_marker.rviz"/>
+
+  <arg name="world" default="empty.sdf" description="Path to the SDF world file"/>
+
+
+  <!-- ROS2 NODES -->
+  <node
+    pkg="rviz2"
+    exec="rviz2"
+    args="-d $(var rviz_config_path)"/>
+
+  <!-- Load GZ GUI -->
+  <include file="$(var spider_gazebo_share)/launch/gz_sim.launch">
+    <arg name="world" value="$(var world)"/>
+  </include>
+
+  <!-- Spawn URDF model into GZ -->
+  <include file="$(var spider_gazebo_share)/launch/gz_spawn_model.launch">
+    <arg name="world" value="empty"/>
+    <arg name="entity_name" value="spider"/>
+    <arg name="model" value="$(var spider_gazebo_share)/urdf/robot.urdf.xacro"/>
+    <!-- <arg name="model" value="$(var model)"/> -->
+    <arg name="use_mock_hardware" value="$(var use_mock_hardware)"/>
+
+    <arg name="z" value="3.0"/>
+  </include>
+
+  <!-- Load ros_gz_bridge -->
+  <include file="$(var spider_gazebo_share)/launch/ros_gz_bridge.launch">
+    <arg name="bridge_name" value="spider_bridge"/>
+    <arg name="config_file" value="$(var spider_gazebo_share)/config/ros_gz_bridge.yaml"/>
+  </include>
+
+</launch>

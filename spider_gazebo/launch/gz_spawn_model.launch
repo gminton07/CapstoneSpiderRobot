@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<!-- Spawn URDF model into GZ -->
+
+<launch>
+  
+  <!-- ARGUMENTS -->
+  <arg name="use_mock_hardware" default="false"/>
+  <arg name="model" default="$(find-pkg-share spider_capstone_description)/urdf/spider_v2.urdf.xacro"/>
+  <arg name="world" default=""/>
+  <arg name="entity_name" default="Project1"/>
+  <arg name="x" default="0.0"/>
+  <arg name="y" default="0.0"/>
+  <arg name="z" default="0.0"/>
+  <arg name="roll" default="0.0"/>
+  <arg name="pitch" default="0.0"/>
+  <arg name="yaw" default="0.0"/>
+
+  <let name="topic" value="$(var entity_name)/robot_description"/>
+
+
+  <!-- NODES -->
+  <node pkg="robot_state_publisher"
+    exec="robot_state_publisher"
+    namespace="$(var entity_name)">
+    <param
+      name="robot_description"
+      value="$(command 'xacro $(var model) use_mock_hardware:=$(var use_mock_hardware)')"/>
+  </node>
+
+  <node
+    pkg="joint_state_publisher_gui"
+    exec="joint_state_publisher_gui"
+    namespace="$(var entity_name)"
+    output="screen"/>
+
+  <include file="$(find-pkg-share ros_gz_sim)/launch/gz_spawn_model.launch.py">
+    <arg name="world" value="$(var world)"/>
+    <arg name="topic" value="$(var topic)"/>
+    <arg name="entity_name" value="$(var entity_name)"/>
+    <arg name="allow_renaming" value="False"/>
+    <arg name="x" value="$(var x)"/>
+    <arg name="y" value="$(var y)"/>
+    <arg name="z" value="$(var z)"/>
+    <arg name="R" value="$(var roll)"/>
+    <arg name="P" value="$(var pitch)"/>
+    <arg name="Y" value="$(var yaw)"/>
+  </include>
+</launch>

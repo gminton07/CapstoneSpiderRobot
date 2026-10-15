@@ -16,6 +16,7 @@
   <exec_depend>spider_capstone_sensors</exec_depend>
   <exec_depend>spider_capstone_trajectory</exec_depend>
   <exec_depend>spider_capstone_visualize</exec_depend>
+  <exec_depend>spider_gazebo</exec_depend>
 
   <build_depend>kdl_py_bridge</build_depend>
 
