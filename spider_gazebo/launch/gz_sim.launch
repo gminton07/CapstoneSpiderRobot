@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="world" default=""/>
+
+  <include file="$(find-pkg-share ros_gz_sim)/launch/gz_sim.launch.py">
+    <arg name="gz_args" value="-r $(var world)"/>
+  </include>
+</launch>
