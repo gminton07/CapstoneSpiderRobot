@@ -28,8 +28,8 @@
   <include file="$(var spider_gazebo_share)/launch/gz_spawn_model.launch">
     <arg name="world" value="empty"/>
     <arg name="entity_name" value="spider"/>
-    <arg name="model" value="$(var spider_gazebo_share)/urdf/robot.urdf.xacro"/>
-    <!-- <arg name="model" value="$(var model)"/> -->
+  <!--<arg name="model" value="$(var spider_gazebo_share)/urdf/robot.urdf.xacro"/>-->
+    <arg name="model" value="$(var model)"/>
     <arg name="use_mock_hardware" value="$(var use_mock_hardware)"/>
 
     <arg name="z" value="3.0"/>

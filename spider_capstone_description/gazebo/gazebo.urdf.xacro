@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="https://www.ros.org/wiki/xacro">
+  <gazebo>
+    <plugin filename="libgz_ros2_control-system.so" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+      <parameters>$(find spider_capstone_bringup)/config/spider_capstone_controllers.yaml</parameters>
+      <ros>
+        <namespace>/spider</namespace>
+        <remapping>/robot_description:=/spider/robot_description</remapping>
+      </ros>
+    </plugin>
+  </gazebo>
+</robot>

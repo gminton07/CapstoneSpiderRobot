@@ -7,6 +7,7 @@
   <xacro:include filename="$(find spider_capstone_description)/ros2_control/spider.ros2_control.xacro"/>
   <xacro:spider_ros2_control use_mock_hardware="$(arg use_mock_hardware)"/>
   <xacro:include filename="$(find spider_capstone_description)/urdf/leg_v2.urdf.xacro"/>
+  <xacro:include filename="$(find spider_capstone_description)/gazebo/gazebo.urdf.xacro"/>
 
   <!--  Colors  -->
   <material name="blue">

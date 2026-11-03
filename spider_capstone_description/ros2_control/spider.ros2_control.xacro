@@ -17,6 +17,9 @@
           <plugin>mock_components/GenericSystem</plugin>
           <param name="calculate_dynamics">true</param>
         </hardware>
+        <hardware>
+          <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+        </hardware>
       </xacro:if>
 
       <!-- Leg macro [Only use effort with mock system] -->
