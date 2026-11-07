@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from time import time
-from Inverse_Kinematics import inverse_kinematic_FR, inverse_kinematic_FL, inverse_kinematic_RL, inverse_kinematic_RR
-from Rotations import Right_Rear_Rotation_1_0, Right_Front_Rotation_1_0, Left_Rear_Rotation_1_0, Left_Front_Rotation_1_0, Rotation_2_0, Rotation_3_0
+from .Inverse_Kinematics import inverse_kinematic_FR, inverse_kinematic_FL, inverse_kinematic_RL, inverse_kinematic_RR
+from .Rotations import Right_Rear_Rotation_1_0, Right_Front_Rotation_1_0, Left_Rear_Rotation_1_0, Left_Front_Rotation_1_0, Rotation_2_0, Rotation_3_0
 
 
 # started coding around  7:00pm 3/16/2026
@@ -147,63 +147,64 @@ def GraphFinisher(ax):
 
 
 
-# just testing code
+def main():
+    # just testing code
 
-[FL,FR,RL,RR] = Spin_cycle()
+    [FL,FR,RL,RR] = Spin_cycle()
 
-#fig = plt.ion()
-fig = plt.figure()  # brought out here.
-ax = plt.axes(projection='3d')
-
-
-
-# Pull the points from the walking cycle #
-Points_FL = FL[0:3,:].T
-Points_FR = FR[0:3,:].T
-Points_RL = RL[0:3,:].T
-Points_RR = RR[0:3,:].T
-# throwing this here
-total_pts = 20   # total path points, here to avoid out of bounds indexing
-T_start = time() # start time
-T_now = time()   # current time tracker
-T_duration =  30 # seconds
-T_pause = 0.25    # time between each point, funtionally the period. 
-T_lastP = time() # like T_now but for steps
-i = 0              # our ticker
+    #fig = plt.ion()
+    fig = plt.figure()  # brought out here.
+    ax = plt.axes(projection='3d')
 
 
-while T_now <= (T_start + T_duration):
-    T_now = time()  # update time
 
-    theta_FL = inverse_kinematic_FL(Points_FL[(15 + i) % total_pts,:]) 
-    theta_FR = inverse_kinematic_FR(Points_FR[(5 + i) % total_pts,:])
-    theta_RL = inverse_kinematic_RL(Points_RL[(10 + i) % total_pts,:])
-    theta_RR = inverse_kinematic_RR(Points_RR[(0 + i) % total_pts,:])
-    # plot the robot with leg theta values (for when we send off to real robot?)
-    plot_robot_spins(ax,theta_FR,theta_FL,theta_RR,theta_RL)
+    # Pull the points from the walking cycle #
+    Points_FL = FL[0:3,:].T
+    Points_FR = FR[0:3,:].T
+    Points_RL = RL[0:3,:].T
+    Points_RR = RR[0:3,:].T
+    # throwing this here
+    total_pts = 20   # total path points, here to avoid out of bounds indexing
+    T_start = time() # start time
+    T_now = time()   # current time tracker
+    T_duration =  30 # seconds
+    T_pause = 0.25    # time between each point, funtionally the period. 
+    T_lastP = time() # like T_now but for steps
+    i = 0              # our ticker
 
-    
-    # Triange plotting code:
-    tri = [(Points_FL[(15 + i) % total_pts,:]), (Points_FR[(5 + i) % total_pts,:]),(Points_RL[(10 + i) % total_pts,:]),(Points_RR[(0 + i) % total_pts,:])]
-    triout = [0,0,0,0] #hopefully  declaration saves computation time
-    i2 = 0
-    for x in tri:   #grabs points on ground and chucks into array
-        if x[2] < -7.62:
-            triout[i2] = x
-            i2 = i2 + 1
-            triout[3] = triout[0]
-    trix = [triout[0][0],triout[1][0],triout[2][0],triout[3][0]]
-    triy = [triout[0][1],triout[1][1],triout[2][1],triout[3][1]]
-    triz = [triout[0][2],triout[1][2],triout[2][2],triout[3][2]]
-    ax.plot3D(trix,triy,triz,'red')
 
-    i = (i + 1) % total_pts          # iterate because ye
+    while T_now <= (T_start + T_duration):
+        T_now = time()  # update time
 
-    # plot points # (put here becausr ax.clear() keeps erasing)
-    ax.plot3D(FL[0,:],FL[1,:],FL[2,:],'.',markerfacecolor='none',color="darkgreen")
-    ax.plot3D(FR[0,:],FR[1,:],FR[2,:],'.',markerfacecolor='none',color="black")
-    ax.plot3D(RR[0,:],RR[1,:],RR[2,:],'.',markerfacecolor='none',color="DarkRed")
-    ax.plot3D(RL[0,:],RL[1,:],RL[2,:],'.',markerfacecolor='none',color="DarkBlue")
-    GraphFinisher(ax)
-    plt.pause(0.1)         # needed for grapher to graph. Currently controls speedof rotation
-    ax.clear()             # so doesnt overlap itself
+        theta_FL = inverse_kinematic_FL(Points_FL[(15 + i) % total_pts,:]) 
+        theta_FR = inverse_kinematic_FR(Points_FR[(5 + i) % total_pts,:])
+        theta_RL = inverse_kinematic_RL(Points_RL[(10 + i) % total_pts,:])
+        theta_RR = inverse_kinematic_RR(Points_RR[(0 + i) % total_pts,:])
+        # plot the robot with leg theta values (for when we send off to real robot?)
+        plot_robot_spins(ax,theta_FR,theta_FL,theta_RR,theta_RL)
+
+        
+        # Triange plotting code:
+        tri = [(Points_FL[(15 + i) % total_pts,:]), (Points_FR[(5 + i) % total_pts,:]),(Points_RL[(10 + i) % total_pts,:]),(Points_RR[(0 + i) % total_pts,:])]
+        triout = [0,0,0,0] #hopefully  declaration saves computation time
+        i2 = 0
+        for x in tri:   #grabs points on ground and chucks into array
+            if x[2] < -7.62:
+                triout[i2] = x
+                i2 = i2 + 1
+                triout[3] = triout[0]
+        trix = [triout[0][0],triout[1][0],triout[2][0],triout[3][0]]
+        triy = [triout[0][1],triout[1][1],triout[2][1],triout[3][1]]
+        triz = [triout[0][2],triout[1][2],triout[2][2],triout[3][2]]
+        ax.plot3D(trix,triy,triz,'red')
+
+        i = (i + 1) % total_pts          # iterate because ye
+
+        # plot points # (put here becausr ax.clear() keeps erasing)
+        ax.plot3D(FL[0,:],FL[1,:],FL[2,:],'.',markerfacecolor='none',color="darkgreen")
+        ax.plot3D(FR[0,:],FR[1,:],FR[2,:],'.',markerfacecolor='none',color="black")
+        ax.plot3D(RR[0,:],RR[1,:],RR[2,:],'.',markerfacecolor='none',color="DarkRed")
+        ax.plot3D(RL[0,:],RL[1,:],RL[2,:],'.',markerfacecolor='none',color="DarkBlue")
+        GraphFinisher(ax)
+        plt.pause(0.1)         # needed for grapher to graph. Currently controls speedof rotation
+        ax.clear()             # so doesnt overlap itself
