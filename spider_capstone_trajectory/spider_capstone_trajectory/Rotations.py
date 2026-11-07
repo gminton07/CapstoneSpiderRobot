@@ -1,87 +1,95 @@
 import numpy as np
-# Rotation Matrices #
 
-def Right_Rear_Rotation_1_0(x,theta):
+# Variables
+XOFFSET = 5.66023622 / 2
+YOFFSET = 4.98385827 / 2
+
+# Calculate rotation matrices for each leg
+# on robot frame
+def Rotation_1_0(link: np.ndarray, theta: float, leg: int = 1) \
+    -> tuple[np.ndarray, np.ndarray]:
+    # Set x- / y- axis and angular offsets
+    x_offset, y_offset = 0, 0
+    theta_offset = 0
+    match leg:
+        # Rear-right rotation
+        case 1:
+            x_offset = -XOFFSET
+            y_offset = -YOFFSET
+            theta_offset = -3/4 * np.pi
+            pass
+        # Front-right rotation
+        case 2:
+            x_offset = XOFFSET
+            y_offset = -YOFFSET
+            theta_offset = -1/4 * np.pi
+            pass
+        # Rear-left rotation
+        case 3:
+            x_offset = XOFFSET
+            y_offset = YOFFSET
+            theta_offset = 1/4 * np.pi
+            pass
+        # Front-left rotation
+        case 4:
+            x_offset = -XOFFSET
+            y_offset = YOFFSET
+            theta_offset = 3/4 * np.pi
+            pass
+        case _:
+            raise Exception(f'Error: leg ({leg}) not supported')
+
+    link = matrix_setup(link)
     
-    # Find the number of rows to impliment a ones matrix #
-    rows = np.size(x[:,0])
-    part_scale = np.ones([rows,1])
+    # Normalize the angle theta relative to the rotation
+    theta += theta_offset
+
+    # Create rotation matrix
+    Rz = np.array([
+        [np.cos(theta), -np.sin(theta), 0, x_offset],
+        [np.sin(theta),  np.cos(theta), 0, y_offset],
+        [0,              0,             1, 0],
+        [0,              0,             0, 1]
+    ])
     
-    
-    # Sandwich the matrix with the ones vector #    
-    x = np.hstack((x,part_scale))
-    
-    # Normalize the angle theta relative to the rotation #
-    theta_1 = theta-3*np.pi/4
-    
-    # Create the rotation matrix #
-    Rz = np.array([[np.cos(theta_1),-np.sin(theta_1),0,-5.66023622/2],[np.sin(theta_1),np.cos(theta_1),0,-4.98385827/2],[0,0,1,0],[0,0,0,1]])
-    
-    # Transformation Matrix #
-    Trans_Link1= (Rz@x.T).T
+    # Transformation Matrix
+    Trans_Link1= (Rz@link.T).T
     
     return Trans_Link1, Rz
 
-def Right_Front_Rotation_1_0(x,theta):
-    
-    # Find the number of rows to impliment a ones matrix #
-    rows = np.size(x[:,0])
-    part_scale = np.ones([rows,1])
-    
-    # Sandwich the matrix with the ones vector #    
-    x = np.hstack((x,part_scale))
-    
-    # Normalize the angle theta relative to the rotation #
-    theta_1 = theta - np.pi/4
-    
-    # Create the rotation matrix #
-    Rz = np.array([[np.cos(theta_1),-np.sin(theta_1),0,5.66023622/2],[np.sin(theta_1),np.cos(theta_1),0,-4.98385827/2],[0,0,1,0],[0,0,0,1]])
-    
-    # Transformation Matrix #
-    Trans_Link1= (Rz@x.T).T
-    
-    return Trans_Link1, Rz
+# Matrix resize helper
+def matrix_setup(A: np.ndarray) -> np.ndarray:
+    rows = np.size(A, 0)
+    part_scale = np.ones([rows, 1])
+    return np.hstack((A, part_scale))
 
-def Left_Front_Rotation_1_0(x,theta):
-    
-    # Find the number of rows to impliment a ones matrix #
-    rows = np.size(x[:,0])
-    part_scale = np.ones([rows,1])
-    
-    # Sandwich the matrix with the ones vector #    
-    x = np.hstack((x,part_scale))
-    
-    # Normalize the angle theta relative to the rotation #
-    theta_1 = theta + np.pi/4
-    
-    # Create the rotation matrix #
-    Rz = np.array([[np.cos(theta_1),-np.sin(theta_1),0,5.66023622/2],[np.sin(theta_1),np.cos(theta_1),0,4.98385827/2],[0,0,1,0],[0,0,0,1]])
-    
-    # Transformation Matrix #
-    Trans_Link1= (Rz@x.T).T
-    
-    return Trans_Link1,Rz
+## Testing Code ##
+if __name__ == '__main__':
+    A = np.array([
+        [0, 0, 0],
+        [2, 0, 0],
+    ])
 
-def Left_Rear_Rotation_1_0(x,theta):
-    
-    # Find the number of rows to impliment a ones matrix #
-    rows = np.size(x[:,0])
-    part_scale = np.ones([rows,1])
-    
-    # Sandwich the matrix with the ones vector #    
-    x = np.hstack((x,part_scale))
-    
-    # Normalize the angle theta relative to the rotation #
-    theta_1 = theta + np.pi*3/4
-    
-    # Create the rotation matrix #
-    Rz = np.array([[np.cos(theta_1),-np.sin(theta_1),0,-5.66023622/2],[np.sin(theta_1),np.cos(theta_1),0,4.98385827/2],[0,0,1,0],[0,0,0,1]])
-    
-    # Transformation Matrix #
-    Trans_Link1= (Rz@x.T).T
-    
-    return Trans_Link1,Rz
+    print(A)
+    print(matrix_setup(A))
 
+    try:
+        trans, rA1 = Rotation_1_0(A, 1.0, 1)
+        print(f'{rA1 = }\n{trans = }')
+        print(np.shape(rA1))
+        rA2 = Rotation_1_0(A, 1.0, 2)
+        print(f'{rA2 = }')
+        rA3 = Rotation_1_0(A, 1.0, 3)
+        print(f'{rA3 = }')
+        rA4 = Rotation_1_0(A, 1.0, 4)
+        print(f'{rA4 = }')
+        rA = Rotation_1_0(A, 1.0, 6)
+        print(f'{rA = }')
+    except Exception as e:
+        print(e)
+## Testing Code ##
+
+# Calculates translation matrix from frame-2 to frame-0
 def Rotation_2_0(x,theta,Rz,Length):
     
     # Find the number of rows to impliment a ones matrix #
@@ -102,6 +110,7 @@ def Rotation_2_0(x,theta,Rz,Length):
     
     return Trans_Link2, RzRy
 
+# Calculates translation matrix from frame-3 to frame-0
 def Rotation_3_0(x,theta,RzRy,Length):
     # Find the number of rows to impliment a ones matrix #
     rows = np.size(x[:,0])

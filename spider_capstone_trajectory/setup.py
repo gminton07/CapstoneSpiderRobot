@@ -31,6 +31,8 @@ setup(
             f'BigSteppy = {package_name}.BigSteppy:main',
             f'ActionSteppy = {package_name}.ActionSteppy:main',
             f'GoSteppy = {package_name}.GoSteppy:main',
+            # Delete later
+            f'SpinActions = {package_name}.SpinActions:main'
         ],
     },
 )
