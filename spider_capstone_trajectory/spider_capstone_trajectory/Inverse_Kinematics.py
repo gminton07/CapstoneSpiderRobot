@@ -1,12 +1,10 @@
 # Inverse Kinematics library for the spider robot
 # 
-# Updated November 2026
+# Written 2026
+# Author: Neil Breslich
 
 import math, numpy as np 
-from .Rotations import Rotation_1_0, Rotation_2_0, Rotation_3_0, walking_cycle
-
-def inverse_kinematics(point: tuple[float, float, float]) -> tuple[float, float, float]:
-    return (0.0, 0.0, 0.0)
+#from .Rotations import Right_Rear_Rotation_1_0, Right_Front_Rotation_1_0, Left_Front_Rotation_1_0, Left_Rear_Rotation_1_0, Rotation_2_0, Rotation_3_0, walking_cycle
 
 def inverse_kinematic(Point):
     

@@ -1,6 +1,11 @@
-import numpy as np
-# Rotation Matrices #
+# Rotations function library for the robot
+# 
+# Written 2026
+# Author: Neil Breslich
 
+import numpy as np
+
+# Rotation Matrices #
 def Right_Rear_Rotation_1_0(x,theta):
     
     # Find the number of rows to impliment a ones matrix #
