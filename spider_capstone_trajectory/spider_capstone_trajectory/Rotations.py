@@ -24,13 +24,13 @@ def Rotation_1_0(link: np.ndarray, theta: float, leg: int = 1) \
             y_offset = -YOFFSET
             theta_offset = -1/4 * np.pi
             pass
-        # Rear-left rotation
+        # Front-left rotation
         case 3:
             x_offset = XOFFSET
             y_offset = YOFFSET
             theta_offset = 1/4 * np.pi
             pass
-        # Front-left rotation
+        # Rear-left rotation
         case 4:
             x_offset = -XOFFSET
             y_offset = YOFFSET

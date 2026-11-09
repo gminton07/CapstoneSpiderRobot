@@ -33,6 +33,7 @@ setup(
             f'GoSteppy = {package_name}.GoSteppy:main',
             # Delete later
             f'SpinActions = {package_name}.SpinActions:main'
+            # Delete later
         ],
     },
 )
