@@ -71,6 +71,15 @@ def Rz(theta, x_off, y_off: float) -> np.ndarray:
        [0,              0,             0, 1]
    ])
 
+# linear translation
+def Translate(x_off, y_off, z_off: float) -> np.ndarray:
+    return np.array([
+        [1, 0, 0, x_off],
+        [0, 1, 0, y_off],
+        [0, 0, 1, z_off],
+        [0, 0, 0, 1]
+    ])
+
 # Rotation from frame 1 to frame 0
 def Rotation_1_0(link: np.ndarray, theta: float, leg_code: int | str) \
     -> tuple[np.ndarray, np.ndarray]:
@@ -119,8 +128,11 @@ class Point3D():
     y: float
     z: float
 
-# Revisit the geometry, something is not adding up
 def inverse_kinematics(p: Point3D, leg_code: int | str):
+    """
+    Revisit the geometry, something is not adding up
+    """
+
     # Get point offsets
     x_off, y_off, theta_off = get_leg_offsets(leg_code)
     x = p.x - x_off
@@ -159,29 +171,57 @@ def inverse_kinematics(p: Point3D, leg_code: int | str):
     
     return theta1, theta2, theta3
 
+# Forward kinematics given an array of angles
+def forward_kinematics(thetas: list[float]) -> Point3D:
+    rotation_matrix = (
+        Rz(thetas[0], XOFFSET, YOFFSET) @
+        Ry(thetas[1], LINK1_LEN) @
+        Ry(thetas[2], LINK2_LEN) @
+        Translate(LINK3_LEN, 0, 0)
+    )
+
+    return rotation_matrix
+
 if __name__ == '__main__':
     p = Point3D(1.0, 2.0, 3.0)
     pl = [1.0, 2.0, 3.0]
 
     from Inverse_Kinematics import *
-    print('Neil to Gabe Errors:')
+    print('Neil to Gabe percent errors:')
     print('FR')
     Gabe = (inverse_kinematics(p, 1))
     Neil = (inverse_kinematic_FR(pl))
-    print([G - N for G,N in zip(Gabe, Neil)])
-    
+    print([(G - N)/N for G,N in zip(Gabe, Neil)])
+    N = forward_kinematics(Neil)
+    G = forward_kinematics(Gabe)
+    print(f'Neil: {N}\nGabe: {G}')
+
     print('FL')
     Gabe = (inverse_kinematics(p, 2))
     Neil = (inverse_kinematic_FL(pl))
-    print([G - N for G,N in zip(Gabe, Neil)])
+    print([(G - N)/N for G,N in zip(Gabe, Neil)])
+    N = forward_kinematics(Neil)
+    G = forward_kinematics(Gabe)
+    print(f'Neil: {N}\nGabe: {G}')
 
     print('RL')
     Gabe = (inverse_kinematics(p, 3))
     Neil = (inverse_kinematic_RL(pl))
-    print([G - N for G,N in zip(Gabe, Neil)])
+    print([(G - N)/N for G,N in zip(Gabe, Neil)])
+    N = forward_kinematics(Neil)
+    G = forward_kinematics(Gabe)
+    print(f'Neil: {N}\nGabe: {G}')
 
     print('RR')
     Gabe = (inverse_kinematics(p, 4))
     Neil = (inverse_kinematic_RR(pl))
-    print([G - N for G,N in zip(Gabe, Neil)])
+    print([(G - N)/N for G,N in zip(Gabe, Neil)])
+    N = forward_kinematics(Neil)
+    G = forward_kinematics(Gabe)
+    print(f'Neil: {N}\nGabe: {G}')
 
+    print(inverse_kinematics(Point3D(
+        LINK1_LEN+LINK2_LEN+LINK3_LEN- 0.1,
+        0,
+        0), 'FL'
+        ))
