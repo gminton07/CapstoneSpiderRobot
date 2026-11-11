@@ -1,7 +1,10 @@
-import numpy as np;import cmath; import math; import cmath; # import matplotlib.pyplot as plt 
-from .Rotations import walking_cycle, Right_Rear_Rotation_1_0, Right_Front_Rotation_1_0, Left_Rear_Rotation_1_0, Left_Front_Rotation_1_0, Rotation_2_0, Rotation_3_0, walking_cycle
+# Inverse Kinematics library for the spider robot
+# 
+# Written 2026
+# Author: Neil Breslich
 
-
+import math, numpy as np 
+#from .Rotations import Right_Rear_Rotation_1_0, Right_Front_Rotation_1_0, Left_Front_Rotation_1_0, Left_Rear_Rotation_1_0, Rotation_2_0, Rotation_3_0, walking_cycle
 
 def inverse_kinematic(Point):
     
